@@ -55,6 +55,11 @@ class test:
         #điều chỉnh camera
         self.scroll = [0,0]
 
+        #tải map:
+        try:
+            self.tilemap.load('map.json')
+        except FileNotFoundError:
+            pass
     def run(self):#chạy game
         run = True
 
