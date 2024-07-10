@@ -32,6 +32,7 @@ class Editor:
             'grass': load_images('tiles//grass'),
             'large_decor': load_images('tiles//large_decor'),
             'stone': load_images('tiles//stone'),
+            'spawners': load_images('tiles//spawners')
         }
         print(self.assets)
         
@@ -41,7 +42,10 @@ class Editor:
         #đối tượng vật thể trong map
         self.tilemap = Tilemap(self,tile_size=16)
         
-        
+        try:
+            self.tilemap.load('map.json')
+        except FileNotFoundError:
+            pass
 
 
         #điều chỉnh camera
