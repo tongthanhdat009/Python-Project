@@ -151,7 +151,7 @@ class Player(PhysicsEntity):
 
         self.air_time += 1
         
-        if self.air_time > 120:
+        if self.air_time > 160:
             if not self.game.dead:
                 self.game.screenshake = max(16, self.game.screenshake)
             self.game.dead += 1 #rơi ra khỏi map tự reset
@@ -175,7 +175,10 @@ class Player(PhysicsEntity):
         #nếu rơi không trạm tường
         if not self.wall_slide:
             if self.air_time > 4:
-                self.set_action('jump')
+                if self.jump_count == 0: #nếu số lần nhảy = 0 thì sẽ chạy hoạt ảnh double_jump
+                    self.set_action('double_jump')
+                else:
+                    self.set_action('jump')
             elif movement[0] != 0:
                 self.set_action('run')
             else:
@@ -229,9 +232,14 @@ class Player(PhysicsEntity):
         elif self.jump_count:
             self.game.sfx['jump'].play()
             self.velocity[1] = -3 #độ cao khi nhảy
+            if self.jump_count == 0:
+                self.set_action('double_jump')
+            else:
+                self.set_action('jump')
             self.jump_count -= 1 # giới hạn số lần nhảy
             self.air_time = 5 # thời gian trên không
             return True
+        
         
     def dash(self):
         if not self.dashing:
