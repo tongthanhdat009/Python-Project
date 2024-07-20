@@ -135,9 +135,9 @@ class Enemy(PhysicsEntity):
         
         #render súng cho npc đúng chiều và ngược chiều
         if self.flip:
-            surf.blit(pygame.transform.flip(self.game.assets['gun'], True, False), (self.rect().centerx - 4 - self.game.assets['gun'].get_width() - offset[0], self.rect().centery - offset[1]))
+            surf.blit(pygame.transform.flip(self.game.assets['gun'], True, False), (self.rect().centerx - 8 - self.game.assets['gun'].get_width() - offset[0], self.rect().centery - offset[1]))
         else:
-            surf.blit(self.game.assets['gun'], (self.rect().centerx + 4 - offset[0], self.rect().centery - offset[1]))
+            surf.blit(self.game.assets['gun'], (self.rect().centerx + 8 - offset[0], self.rect().centery - offset[1]))
 
 class Player(PhysicsEntity):
     def __init__(self, game, pos, size):
@@ -158,9 +158,11 @@ class Player(PhysicsEntity):
 
         #kiểm tra rơi
         if self.collisions['down']:
+            if self.air_time > 5:
+                self.game.sfx['landing'].play()
             self.air_time=0
-            self.jump_count = 2 
-        
+            self.jump_count = 2
+
         #kiểm tra rơi khi chạm tường
         self.wall_slide = False
         if (self.collisions['right'] or self.collisions['left']) and self.air_time > 4: #chạm tường bên trái hoặc phải nhân vật sẽ kích hoạt trượt tường
@@ -172,7 +174,7 @@ class Player(PhysicsEntity):
                 self.flip = True
             self.set_action('wall_slide')
 
-        #nếu rơi không trạm tường
+        #nếu rơi không chạm tường
         if not self.wall_slide:
             if self.air_time > 4:
                 if self.jump_count == 0: #nếu số lần nhảy = 0 thì sẽ chạy hoạt ảnh double_jump
@@ -230,11 +232,12 @@ class Player(PhysicsEntity):
                 return True 
 
         elif self.jump_count:
-            self.game.sfx['jump'].play()
             self.velocity[1] = -3 #độ cao khi nhảy
             if self.jump_count == 0:
                 self.set_action('double_jump')
+                self.game.sfx['jump'].play()
             else:
+                self.game.sfx['jump'].play()
                 self.set_action('jump')
             self.jump_count -= 1 # giới hạn số lần nhảy
             self.air_time = 5 # thời gian trên không

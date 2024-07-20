@@ -8,7 +8,7 @@ from script.entities import PhysicsEntity, Player, Enemy
 from script.spark import Spark
 from script.utils import load_image, load_images, animation
 from script.tilemap import Tilemap
-from script.clouds import clouds
+from script.spaceships import spaceships
 from script.particles import particle
 
 class Test:
@@ -33,17 +33,16 @@ class Test:
             'stone': load_images('tiles//stone'),
             'player': load_image('entities//player.png'),
             'background': load_image('background.png'),
-            'clouds': load_images('clouds'),
+            'spaceships': load_images('spaceships'),
             'player//idle': animation(load_images('entities//player//idle'), img_dur=6),
             'player//run': animation(load_images('entities//player//run'), img_dur=7),
             'player//jump': animation(load_images('entities//player//jump')),
             'player//double_jump': animation(load_images('entities//player//double_jump'),img_dur=4),
-            'player//slide': animation(load_images('entities//player//slide')),
             'player//wall_slide': animation(load_images('entities//player//wall_slide')),
             'particle//leaf': animation(load_images('particles//leaf'), img_dur= 20, loop= False),
             'particle//particle': animation(load_images('particles//particle'), img_dur= 2, loop= False),
             'enemy//idle': animation(load_images('entities//enemy//idle'), img_dur= 6),
-            'enemy//run': animation(load_images('entities//enemy//run'), img_dur= 4),
+            'enemy//run': animation(load_images('entities//enemy//run'), img_dur= 7),
             'gun':load_image('gun.png'),
             'projectile':load_image('projectile.png'),
             'menu':load_image('menu//bg_menu.jpg')
@@ -56,17 +55,19 @@ class Test:
             'hit': pygame.mixer.Sound('data//sfx//hit.wav'),
             'shoot': pygame.mixer.Sound('data//sfx//shoot.wav'),
             'ambience': pygame.mixer.Sound('data//sfx//ambience.wav'),
+            'landing': pygame.mixer.Sound('data//sfx//landing.mp3'),
         }
 
         self.sfx['ambience'].set_volume(0.2)
         self.sfx['shoot'].set_volume(0.4)
-        self.sfx['hit'].set_volume(0.8)
+        self.sfx['hit'].set_volume(0.5)
         self.sfx['dash'].set_volume(0.3)
-        self.sfx['jump'].set_volume(0.7)
+        self.sfx['jump'].set_volume(1)
+        self.sfx['landing'].set_volume(0.8)
 
         # khởi tạo đối tượng:
         #mây
-        self.clouds = clouds(self.assets['clouds'], count=5)
+        self.spaceships = spaceships(self.assets['spaceships'], count=8)
 
         # người chơi
         self.player = Player(self, (50, 50), (8, 15))
@@ -154,10 +155,10 @@ class Test:
             self.tilemap.render(self.display, offset=render_scroll)
 
             # cập nhật mây mỗi khi chuyển qua 1 khung hình
-            self.clouds.update()
-            self.clouds.render(self.display_2, offset=render_scroll)
+            self.spaceships.update()
+            self.spaceships.render(self.display_2, offset=render_scroll)
 
-            # cập nhật và hiển thị npc npc
+            # cập nhật và hiển thị npc
             for enemy in self.enemies.copy():
                 kill = enemy.update(self.tilemap,(0,0))
                 enemy.render(self.display, offset = render_scroll)
@@ -252,7 +253,6 @@ class Test:
             #hiệu ứng rung màn hình
             screenshake_offset = (random.random() * self.screenshake - self.screenshake / 2,random.random() * self.screenshake - self.screenshake / 2 )
             self.screen.blit(pygame.transform.scale(self.display_2, self.screen.get_size()), screenshake_offset)
-
 
             pygame.display.update()
             self.clock.tick(60)
