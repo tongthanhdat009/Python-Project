@@ -16,23 +16,16 @@ class Editor:
         self.display = pygame.Surface((320,240))
 
         self.clock = pygame.time.Clock()
-
-        #ảnh bầu trời
-        try:
-            self.bg = pygame.image.load('data//images//background.png')
-            self.bg = pygame.transform.scale(self.bg, (640,480))  # Resize the image
-        except FileNotFoundError:
-            print("Background image file not found.")
-            self.bg = None
-
-
+        
         #hình ảnh
         self.assets = {
             'decor': load_images('tiles//decor'),
             'grass': load_images('tiles//grass'),
             'large_decor': load_images('tiles//large_decor'),
             'stone': load_images('tiles//stone'),
-            'spawners': load_images('tiles//spawners')
+            'spawners': load_images('tiles//spawners'),
+            'industry': load_images('tiles//industry'),
+            'power_station':load_images('tiles//power_station')
         }
         print(self.assets)
         
@@ -43,7 +36,7 @@ class Editor:
         self.tilemap = Tilemap(self,tile_size=16)
         
         try:
-            self.tilemap.load('map.json')
+            self.tilemap.load('data//maps//0.json')
         except FileNotFoundError:
             pass
 
@@ -128,7 +121,7 @@ class Editor:
                     if event.key == pygame.K_g: # chỉnh trên đường viền 
                         self.ongrid = False
                     if event.key == pygame.K_o: #lưu map đang tạo
-                        self.tilemap.save('map.json')
+                        self.tilemap.save('data//maps//0.json')
                     if event.key == pygame.K_LSHIFT:
                         self.shift = True
 

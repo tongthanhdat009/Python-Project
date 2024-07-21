@@ -15,8 +15,8 @@ AUTOTILE_MAP = {
 }
 
 NEIGHBOR_OFFSETS = [(-1, 0), (-1, -1), (0, -1), (1, -1), (1, 0), (0, 0), (-1, 1), (0, 1), (1, 1)]
-PHYSICS_TILES = {'grass', 'stone'}
-AUTOTILE_TYPES = {'grass', 'stone'}
+PHYSICS_TILES = {'grass', 'stone','industry','power_station'}
+AUTOTILE_TYPES = {'grass', 'stone','industry','power_station'}
 
 class Tilemap:
     def __init__(self, game, tile_size=16):
@@ -38,7 +38,7 @@ class Tilemap:
                 if not keep:
                     self.offgrid_tiles.remove(tile)
                     
-        for loc in list(self.tilemap.keys()):  # using list() to avoid modifying the dictionary while iterating
+        for loc in list(self.tilemap.keys()): 
             tile = self.tilemap[loc]
             if (tile['type'], tile['variant']) in id_pairs:
                 matches.append(tile.copy())
@@ -98,14 +98,20 @@ class Tilemap:
     # Load map
     def render(self, surf, offset=(0, 0)):
         for tile in self.offgrid_tiles:
-            surf.blit(self.game.assets[tile['type']][tile['variant']], (tile['pos'][0] - offset[0], tile['pos'][1] - offset[1]))
-            
+            try:
+                surf.blit(self.game.assets[tile['type']][tile['variant']], (tile['pos'][0] - offset[0], tile['pos'][1] - offset[1]))
+            except KeyError:
+                print(f"Error: Missing asset for {tile['type']} with variant {tile['variant']}")
+
         for x in range(offset[0] // self.tile_size, (offset[0] + surf.get_width()) // self.tile_size + 1):
             for y in range(offset[1] // self.tile_size, (offset[1] + surf.get_height()) // self.tile_size + 1):
                 loc = str(x) + ';' + str(y)
                 if loc in self.tilemap:
                     tile = self.tilemap[loc]
-                    surf.blit(self.game.assets[tile['type']][tile['variant']], (tile['pos'][0] * self.tile_size - offset[0], tile['pos'][1] * self.tile_size - offset[1]))
+                    try:
+                        surf.blit(self.game.assets[tile['type']][tile['variant']], (tile['pos'][0] * self.tile_size - offset[0], tile['pos'][1] * self.tile_size - offset[1]))
+                    except KeyError:
+                        print(f"Error: Missing asset for {tile['type']} with variant {tile['variant']}")
 
     def solid_check(self, pos):
         tile_loc = str(int(pos[0] // self.tile_size)) + ';' + str(int(pos[1] // self.tile_size))

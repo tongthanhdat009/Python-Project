@@ -31,6 +31,8 @@ class Test:
             'grass': load_images('tiles//grass'),
             'large_decor': load_images('tiles//large_decor'),
             'stone': load_images('tiles//stone'),
+            'industry':load_images('tiles//industry'),
+            'power_station':load_images('tiles//power_station'),
             'player': load_image('entities//player.png'),
             'background': load_image('background.png'),
             'spaceships': load_images('spaceships'),
@@ -91,6 +93,17 @@ class Test:
         self.screenshake = 0 #rung cam
 
         self.transition = -30
+
+        # hiển thị chữ
+        self.white = (255, 255, 255)
+        self.green = (0, 255, 0)
+        self.blue = (0, 0, 128)
+        self.font = pygame.font.Font('freesansbold.ttf', 32)
+        self.a = 0
+        self.text = self.font.render(str(self.a), True, self.green, self.blue)
+        self.textRect = self.text.get_rect()
+        self.textRect = (640//2,480//2)
+
 
     def load_level(self,map_id):
         self.tilemap.load('data//maps//' + str(map_id) +'.json')
@@ -253,7 +266,11 @@ class Test:
             #hiệu ứng rung màn hình
             screenshake_offset = (random.random() * self.screenshake - self.screenshake / 2,random.random() * self.screenshake - self.screenshake / 2 )
             self.screen.blit(pygame.transform.scale(self.display_2, self.screen.get_size()), screenshake_offset)
-
+            
+            # hiển thị chữ
+            # self.text = self.font.render(str(self.a), True, self.green, self.blue)
+            # self.screen.blit(self.text, self.textRect)
+            # self.a+=1
             pygame.display.update()
             self.clock.tick(60)
 
