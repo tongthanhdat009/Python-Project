@@ -99,7 +99,7 @@ class Test:
         self.green = (0, 255, 0)
         self.font = pygame.font.Font('data//font//CyberpunkCraftpixPixel.otf', 32)
         self.a = 0
-        self.text = self.font.render(str(self.a), True, self.green)
+        self.text = self.font.render(": "+str(len(self.enemies)), True, self.green)
         self.textRect = self.text.get_rect()
         self.textRect = (640//2,480//2)
         self.enemy_img = pygame.transform.scale(load_image('entities//enemy//idle//0.png'),(35,35))
@@ -267,9 +267,9 @@ class Test:
             screenshake_offset = (random.random() * self.screenshake - self.screenshake / 2,random.random() * self.screenshake - self.screenshake / 2 )
             self.screen.blit(pygame.transform.scale(self.display_2, self.screen.get_size()), screenshake_offset)
             
-            self.text = self.font.render(": "+str(len(self.enemies)), True, self.green, self.blue)
-            self.screen.blit(self.enemy_img,self.textRect)
-            self.screen.blit(self.text,(400,240))
+            self.text = self.font.render(": "+str(len(self.enemies)), True, self.green)
+            self.screen.blit(self.enemy_img,(515,20))
+            self.screen.blit(self.text,(555,20))
             pygame.display.update()
             self.clock.tick(60)
 
