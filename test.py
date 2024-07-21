@@ -94,15 +94,15 @@ class Test:
 
         self.transition = -30
 
-        # hiển thị chữ
+        # hiển số địch còn lại
         self.white = (255, 255, 255)
         self.green = (0, 255, 0)
-        self.blue = (0, 0, 128)
-        self.font = pygame.font.Font('freesansbold.ttf', 32)
+        self.font = pygame.font.Font('data//font//CyberpunkCraftpixPixel.otf', 32)
         self.a = 0
-        self.text = self.font.render(str(self.a), True, self.green, self.blue)
+        self.text = self.font.render(str(self.a), True, self.green)
         self.textRect = self.text.get_rect()
         self.textRect = (640//2,480//2)
+        self.enemy_img = pygame.transform.scale(load_image('entities//enemy//idle//0.png'),(35,35))
 
 
     def load_level(self,map_id):
@@ -267,10 +267,9 @@ class Test:
             screenshake_offset = (random.random() * self.screenshake - self.screenshake / 2,random.random() * self.screenshake - self.screenshake / 2 )
             self.screen.blit(pygame.transform.scale(self.display_2, self.screen.get_size()), screenshake_offset)
             
-            # hiển thị chữ
-            # self.text = self.font.render(str(self.a), True, self.green, self.blue)
-            # self.screen.blit(self.text, self.textRect)
-            # self.a+=1
+            self.text = self.font.render(": "+str(len(self.enemies)), True, self.green, self.blue)
+            self.screen.blit(self.enemy_img,self.textRect)
+            self.screen.blit(self.text,(400,240))
             pygame.display.update()
             self.clock.tick(60)
 
