@@ -24,8 +24,19 @@ class Editor:
             'large_decor': load_images('tiles//large_decor'),
             'stone': load_images('tiles//stone'),
             'spawners': load_images('tiles//spawners'),
-            'industry': load_images('tiles//industry'),
-            'power_station':load_images('tiles//power_station')
+            'industry1': load_images('tiles//industry//industry_plat_1'),
+            'industry2': load_images('tiles//industry//industry_plat_2'),
+            'industry3': load_images('tiles//industry//industry_plat_3'),
+            'industry4': load_images('tiles//industry//industry_plat_4'),
+            'industry5': load_images('tiles//industry//industry_plat_5'),
+            'industry6': load_images('tiles//industry//industry_plat_6'),
+            'industry7': load_images('tiles//industry//industry_plat_7'),
+            'industry8': load_images('tiles//industry//industry_plat_8'),
+            'power_station1':load_images('tiles//power_station//pw_plat_1'),
+            'power_station2':load_images('tiles//power_station//pw_plat_2'),
+            'power_station3':load_images('tiles//power_station//pw_plat_3'),
+            'power_station4':load_images('tiles//power_station//pw_plat_4'),
+            'power_station5':load_images('tiles//power_station//pw_plat_5'),
         }
         print(self.assets)
         
@@ -100,7 +111,7 @@ class Editor:
                     tile_img = self.assets[tile['type']][tile['variant']]
                     tile_r = pygame.Rect(tile['pos'][0] - self.scroll[0], tile['pos'][1]-self.scroll[1],tile_img.get_width(),tile_img.get_height())
                     if tile_r.collidepoint(mpos):
-                        self.tilemap.offgrid_tile.remove(tile)
+                        self.tilemap.offgrid_tiles.remove(tile)
             
             self.display.blit(current_tile_img,(5,5))
 
