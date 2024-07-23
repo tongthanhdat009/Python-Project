@@ -85,15 +85,14 @@ class Enemy(PhysicsEntity):
         self.walking = 0 #di chuyển
         self.health = health  #máu
         
-    def take_damage(self, amount): #giảm máu npc nếu bị player dash trúng
+    def take_damage(self, amount=20): #giảm máu npc nếu bị player dash trúng
         self.health -= amount
-        print(self.health)
         if self.health <= 0:
             self.die()
             
     def die(self): #xóa npc nếu máu < 0
         self.game.sfx['hit'].play()
-        for i in range(30):  # Death effect
+        for i in range(30):  # hiẹu ứng khi chết 
             angle = random.random() * math.pi * 2
             speed = random.random() * 5
             self.game.sparks.append(Spark(self.rect().center, angle, 2 + random.random()))
@@ -132,22 +131,38 @@ class Enemy(PhysicsEntity):
             self.set_action('run')
         else:
             self.set_action('idle')
-            
+        
+        #player dash trúng sẽ trừ máu enemy
         if abs(self.game.player.dashing) >= 50:
             if self.rect().colliderect(self.game.player.rect()): #kiểm tra nếu player dash trúng npc thì sẽ trừ máu npc
                 self.game.screenshake = max(16, self.game.screenshake)
                 self.game.sfx['hit'].play()
-                self.take_damage(abs(self.game.player.dashing))  # NPC takes damage when the player dashes into them  
+                self.take_damage(abs(self.game.player.dashing))  
                 self.game.player.stop_dash()
                 return True
             
-        #trừ máu player nếu layer player đè trên enemy  
-        # if self.rect().colliderect(self.game.player.rect()) and abs(self.game.player.dashing) < 50:
-        #     damage_amount = 10  # Example damage amount
-        #     self.game.player.health -= damage_amount  # Reduce player health
-        #     self.game.sfx['hit'].play()
-        #     print(f"Player health: {self.game.player.health}")
-        #     return True    
+        # trừ máu player nếu layer player đè trên enemy  
+        if self.rect().colliderect(self.game.player.rect()) and abs(self.game.player.dashing) < 50:
+            damage_amount = 1  # lượng máu sẽ giảm
+            self.game.player.health -= damage_amount  # giảm máu
+            self.game.sfx['hit'].play()
+            if self.game.player.health <= 0:
+                self.game.dead += 1
+                #reset hiệu ứng chuyển cảnh
+                self.game.transition = -50
+                if self.game.transition:
+                    transition_surf = pygame.Surface(self.game.display.get_size())
+                    pygame.draw.circle(transition_surf, (255, 255, 255), (self.game.display.get_width() // 2, self.game.display.get_height() // 2), (30 - abs(self.game.transition)) * 8)
+                    transition_surf.set_colorkey((255, 255, 255))
+                    self.game.display.blit(transition_surf, (0, 0))
+                self.game.player.health = self.health
+                self.game.player.cooldown_skill = 0
+            else:
+                self.game.dead = 0
+            return True    
+
+    def hit(self, amount = 20):
+        self.take_damage(amount)
 
     def render(self, surf, offset=(0, 0)):
         super().render(surf, offset=offset)
@@ -159,14 +174,15 @@ class Enemy(PhysicsEntity):
             surf.blit(self.game.assets['gun'], (self.rect().centerx + 8 - offset[0], self.rect().centery - offset[1]))
 
 class Player(PhysicsEntity):
-    def __init__(self, game, pos, size, health=100):
+    def __init__(self, game, pos, size, health=50):
         super().__init__(game, 'player', pos, size)
         self.air_time = 0 # thời gian trên không
         self.jump_count = 2 #số lần nhảy
         self.wall_slide = False #kiểm tra bám tường
         self.dashing = 0 #kiểm tra lướt
         self.health = health #máu
-        
+        self.cooldown_skill = 0 # thời gian hồi chiêu
+        self.skill_dmg = 1000
     def update(self, tilemap, movement=(0, 0)):
         super().update(tilemap, movement=movement)
 
@@ -214,6 +230,12 @@ class Player(PhysicsEntity):
             self.velocity[0] = max(self.velocity[0] - 0.1, 0)   
         else:     
             self.velocity[0] = min(self.velocity[0] + 0.1, 0)   
+
+        # kiểm tra giảm thời gian hồi chiêu
+        if self.cooldown_skill > 0:
+            self.cooldown_skill -= 50  
+        if self.cooldown_skill < 0:
+            self.cooldown_skill = 0  
 
     def render(self, surf,offset=(0,0)):
         if abs(self.dashing) <= 50:
@@ -277,3 +299,35 @@ class Player(PhysicsEntity):
             else: 
                 self.game.sfx['dash'].play()
                 self.dashing = 60
+    
+    def hit(self):
+        self.game.sfx['hit'].play()                    
+        self.game.player.health -= 10
+        if self.game.player.health <= 0:
+            self.game.dead += 1
+            #reset hiệu ứng chuyển cảnh
+            self.game.transition = -50
+            if self.game.transition:
+                transition_surf = pygame.Surface(self.game.display.get_size())
+                pygame.draw.circle(transition_surf, (255, 255, 255), (self.game.display.get_width() // 2, self.game.display.get_height() // 2), (30 - abs(self.game.transition)) * 8)
+                transition_surf.set_colorkey((255, 255, 255))
+                self.game.display.blit(transition_surf, (0, 0))
+            self.game.player.health = 150
+            self.cooldown_skill = 0
+        else:
+            self.game.dead = 0
+            
+    def skill(self):
+        if self.cooldown_skill == 0:
+            if (self.game.player.flip):
+                self.game.sfx['shoot'].play()
+                self.game.projectiles.append([[self.rect().centerx - 7, self.rect().centery], -1.5, 0])
+                for i in range(4):
+                    self.game.sparks.append(Spark(self.game.projectiles[-1][0], random.random() - 0.5 + math.pi, 2 + random.random()))
+            if (not self.game.player.flip):
+                self.game.sfx['shoot'].play()
+                self.game.projectiles.append([[self.rect().centerx + 7, self.rect().centery], 1.5, 0])
+                for i in range(4):
+                    self.game.sparks.append(Spark(self.game.projectiles[-1][0], random.random() - 0.5, 2 + random.random()))
+            self.cooldown_skill = 60 # thời gian hồi chiêu
+        
