@@ -186,8 +186,8 @@ class Test:
             for enemy in self.enemies.copy():
                 kill = enemy.update(self.tilemap,(0,0))
                 enemy.render(self.display, offset = render_scroll)
-                if kill:
-                    self.enemies.remove(enemy)
+                # if kill:
+                #     self.enemies.remove(enemy)
 
             # cập nhật và hiển thị nhân vật
             if not self.dead:

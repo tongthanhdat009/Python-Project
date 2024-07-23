@@ -79,10 +79,26 @@ class PhysicsEntity:
 
 #kế thừa
 class Enemy(PhysicsEntity):
-    def __init__(self, game, pos, size):
+    def __init__(self, game, pos, size, health=150):
         super().__init__(game, 'enemy', pos, size)
         
-        self.walking = 0
+        self.walking = 0 #di chuyển
+        self.health = health  #máu
+        
+    def take_damage(self, amount): #giảm máu npc nếu bị player dash trúng
+        self.health -= amount
+        print(self.health)
+        if self.health <= 0:
+            self.die()
+            
+    def die(self): #xóa npc nếu máu < 0
+        self.game.sfx['hit'].play()
+        for i in range(30):  # Death effect
+            angle = random.random() * math.pi * 2
+            speed = random.random() * 5
+            self.game.sparks.append(Spark(self.rect().center, angle, 2 + random.random()))
+            self.game.particles.append(particle(self.game, 'particle', self.rect().center, velocity=[math.cos(angle + math.pi) * speed * 0.5, math.sin(angle + math.pi) * speed * 0.5], frame=random.randint(0, 7)))
+        self.game.enemies.remove(self)  
         
     def update(self, tilemap, movement=(0, 0)):
         if self.walking:
@@ -118,18 +134,21 @@ class Enemy(PhysicsEntity):
             self.set_action('idle')
             
         if abs(self.game.player.dashing) >= 50:
-            if self.rect().colliderect(self.game.player.rect()):
+            if self.rect().colliderect(self.game.player.rect()): #kiểm tra nếu player dash trúng npc thì sẽ trừ máu npc
                 self.game.screenshake = max(16, self.game.screenshake)
                 self.game.sfx['hit'].play()
-                for i in range(30): #hiệu ứng khi npc bị người chơi dash trúng
-                    angle = random.random() * math.pi * 2
-                    speed = random.random() * 5
-                    self.game.sparks.append(Spark(self.rect().center, angle, 2 + random.random()))
-                    self.game.particles.append(particle(self.game, 'particle', self.rect().center, velocity=[math.cos(angle + math.pi) * speed * 0.5, math.sin(angle + math.pi) * speed * 0.5], frame=random.randint(0, 7)))
-                self.game.sparks.append(Spark(self.rect().center, 0, 5 + random.random()))
-                self.game.sparks.append(Spark(self.rect().center, math.pi, 5 + random.random()))
+                self.take_damage(abs(self.game.player.dashing))  # NPC takes damage when the player dashes into them  
+                self.game.player.stop_dash()
                 return True
             
+        #trừ máu player nếu layer player đè trên enemy  
+        # if self.rect().colliderect(self.game.player.rect()) and abs(self.game.player.dashing) < 50:
+        #     damage_amount = 10  # Example damage amount
+        #     self.game.player.health -= damage_amount  # Reduce player health
+        #     self.game.sfx['hit'].play()
+        #     print(f"Player health: {self.game.player.health}")
+        #     return True    
+
     def render(self, surf, offset=(0, 0)):
         super().render(surf, offset=offset)
         
@@ -140,12 +159,14 @@ class Enemy(PhysicsEntity):
             surf.blit(self.game.assets['gun'], (self.rect().centerx + 8 - offset[0], self.rect().centery - offset[1]))
 
 class Player(PhysicsEntity):
-    def __init__(self, game, pos, size):
+    def __init__(self, game, pos, size, health=100):
         super().__init__(game, 'player', pos, size)
         self.air_time = 0 # thời gian trên không
         self.jump_count = 2 #số lần nhảy
         self.wall_slide = False #kiểm tra bám tường
         self.dashing = 0 #kiểm tra lướt
+        self.health = health #máu
+        
     def update(self, tilemap, movement=(0, 0)):
         super().update(tilemap, movement=movement)
 
@@ -185,7 +206,21 @@ class Player(PhysicsEntity):
                 self.set_action('run')
             else:
                 self.set_action('idle')
+
+        #giảm tốc độ và thời gian hồi dash
+        self.stop_dash()
         
+        if self.velocity[0] > 0:
+            self.velocity[0] = max(self.velocity[0] - 0.1, 0)   
+        else:     
+            self.velocity[0] = min(self.velocity[0] + 0.1, 0)   
+
+    def render(self, surf,offset=(0,0)):
+        if abs(self.dashing) <= 50:
+            super().render(surf,offset=offset)
+
+    #giảm tốc độ và thời gian hồi dash
+    def stop_dash(self):
         if self.dashing > 0 :
             self.dashing = max(0,self.dashing - 1)
         if self.dashing < 0 :
@@ -202,16 +237,6 @@ class Player(PhysicsEntity):
                 speed = random.random() * 0.5 * 0.5#tốc độ lướt
                 pvelocity = [math.cos(angle)*speed,math.sin(angle)*speed]
                 self.game.particles.append(particle(self.game, 'particle', self.rect().center, velocity = pvelocity, frame=random.randint(0,7)))
-
-        if self.velocity[0] > 0:
-            self.velocity[0] = max(self.velocity[0] - 0.1, 0)   
-        else:     
-            self.velocity[0] = min(self.velocity[0] + 0.1, 0)   
-
-    def render(self, surf,offset=(0,0)):
-        if abs(self.dashing) <= 50:
-            super().render(surf,offset=offset)
-
 
     #hàm kiểm soát việc nhảy của nhân vật
     def jump_perform(self):
