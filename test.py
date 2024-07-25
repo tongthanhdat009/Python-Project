@@ -91,7 +91,11 @@ class Test:
 
         self.particles = []
 
+        #danh sách chứa đạn địch
         self.projectiles = []
+
+        #danh sách chứa skill player 
+        self.projectiles_player = []
 
         self.sparks = [] # hiệu ứng tia lửa
 
@@ -240,6 +244,9 @@ class Test:
                 if kill:
                     self.particles.remove(part)
 
+            #hiển thị đạn
+            self.player.display_bullet(render_scroll)
+
             # xử lý sự kiện nút
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
@@ -253,15 +260,8 @@ class Test:
                         self.player.dash()
                     if event.key == pygame.K_q:
                         self.player.skill()
-                        # for projectile in self.projectiles.copy():
-                        #     projectile[0][0] += projectile[1]
-                        #     projectile[2] += 1
-                        #     img = self.assets['projectile']
-                        #     self.display.blit(img,(projectile[0][0] - img.get_width()/2 - render_scroll[0], projectile[0][1] - img.get_height() /2 - render_scroll[1]))
-                        #     if self.tilemap.solid_check(projectile[0]): #đạn biến mất nếu gặp vật cản
-                        #         self.projectiles.remove(projectile)
-                        #     elif projectile[2] > 360: #thời gian đạn tồn tại
-                        #         self.projectiles.remove(projectile)
+                        
+
                 if event.type == pygame.KEYUP:
                     # if event.key == pygame.K_UP or event.key == pygame.K_w:
                     #     self.movement[2] = False
