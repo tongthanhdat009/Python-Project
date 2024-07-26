@@ -321,37 +321,49 @@ class Player(PhysicsEntity):
         if self.cooldown_skill == 0:
             if (self.game.player.flip):
                 self.game.sfx['shoot'].play()
-                self.game.projectiles_player.append([[self.rect().centerx - 7, self.rect().centery], -1.5, 0])
+                self.game.projectiles_player.append([[self.rect().centerx, self.rect().centery], -1, 0])
                 for i in range(4):
                     self.game.sparks.append(Spark(self.game.projectiles_player[-1][0], random.random() - 0.5 + math.pi, 2 + random.random()))
             if (not self.game.player.flip):
                 self.game.sfx['shoot'].play()
-                self.game.projectiles_player.append([[self.rect().centerx + 7, self.rect().centery], 1.5, 0])
+                self.game.projectiles_player.append([[self.rect().centerx, self.rect().centery], 1, 0])
                 for i in range(4):
-                    self.game.sparks.append(Spark(self.game.projectiles_player[-1][0], random.random() - 0.5, 2 + random.random()))
-            self.cooldown_skill = 60 # thời gian hồi chiêu
-        
+                    self.game.sparks.append(Spark(self.game.projectiles_player[-1][0], random.random() - 1, 2 + random.random()))
+            self.cooldown_skill = 3000 # thời gian hồi chiêu
+    @staticmethod
+    def check_collision(rect1, rect2):
+        return (
+            rect1.left < rect2.right and
+            rect1.right > rect2.left and
+            rect1.top < rect2.bottom and
+            rect1.bottom > rect2.top
+        )
+
+
     def display_bullet(self, render_scroll):
         for projectile_p in self.game.projectiles_player.copy():
             projectile_p[0][0] += projectile_p[1]
             projectile_p[2] += 1
             img = self.game.assets['projectile']
-
             draw_x = projectile_p[0][0] - img.get_width() / 2 - render_scroll[0]
             draw_y = projectile_p[0][1] - img.get_height() / 2 - render_scroll[1]
-
             self.game.display.blit(img, (draw_x, draw_y))
+
+            bullet_rect = pygame.Rect(draw_x, draw_y, img.get_width(), img.get_height())
 
             if self.game.tilemap.solid_check(projectile_p[0]):  # Đạn biến mất nếu gặp vật cản
                 self.game.projectiles_player.remove(projectile_p)
             elif projectile_p[2] > 360:  # Thời gian đạn tồn tại
                 self.game.projectiles_player.remove(projectile_p)
             else:
-                bullet_rect = pygame.Rect(draw_x, draw_y, img.get_width(), img.get_height())
                 for enemy in self.game.enemies:
-                    if bullet_rect.colliderect(enemy.rect()):
-                        print(f"Bullet rect: {bullet_rect}, Enemy rect: {enemy.rect()}")  # Kiểm tra tọa độ va chạm
+                    enemy_rect = enemy.rect()
+                    if self.game.player.rect().collidepoint(projectile_p[0]):  # Kiểm tra nếu enemy và đạn giao nhau
+                        # print(self.game.projectiles_player)
                         self.game.projectiles_player.remove(projectile_p)
-                        enemy.take_damage(20)  # Gọi hàm để trừ máu địch
+                        enemy.take_damage(1000)  # Gọi hàm giảm máu kẻ thù nếu cần thiết
                         break
+
+        
+
 

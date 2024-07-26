@@ -213,7 +213,7 @@ class Test:
                 elif abs(self.player.dashing)<50:
                     if self.player.rect().collidepoint(projectile[0]):
                         self.player.hit()
-                        print(self.player.health)
+                        # print(self.player.health)
                         self.projectiles.remove(projectile)
                         self.screenshake = max(16, self.screenshake)
                         for i in range(30):
