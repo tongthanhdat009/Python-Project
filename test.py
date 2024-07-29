@@ -4,7 +4,7 @@ import random
 import sys
 import pygame
 
-from script.entities import PhysicsEntity, Player, Enemy
+from script.entities import PhysicsEntity, Player, Enemy, Spec_Enemy
 from script.spark import Spark
 from script.utils import load_image, load_images, animation
 from script.tilemap import Tilemap
@@ -50,12 +50,15 @@ class Test:
             'player//idle': animation(load_images('entities//player//idle'), img_dur=6),
             'player//run': animation(load_images('entities//player//run'), img_dur=7),
             'player//jump': animation(load_images('entities//player//jump')),
+            'player//hurt': animation(load_images('entities//player//hurt'),img_dur=10),
             'player//double_jump': animation(load_images('entities//player//double_jump'),img_dur=4),
             'player//wall_slide': animation(load_images('entities//player//wall_slide')),
             'particle//leaf': animation(load_images('particles//leaf'), img_dur= 20, loop= False),
             'particle//particle': animation(load_images('particles//particle'), img_dur= 2, loop= False),
             'enemy//idle': animation(load_images('entities//enemy//idle'), img_dur= 6),
             'enemy//run': animation(load_images('entities//enemy//run'), img_dur= 7),
+            'spec_enemy//idle': animation(load_images('entities//spec_enemy//idle'), img_dur= 6),
+            'spec_enemy//run': animation(load_images('entities//spec_enemy//run'), img_dur= 7),
             'gun':load_image('gun.png'),
             'projectile':load_image('projectile.png'),
             'menu':load_image('menu//bg_menu.jpg')
@@ -69,14 +72,18 @@ class Test:
             'shoot': pygame.mixer.Sound('data//sfx//shoot.wav'),
             'ambience': pygame.mixer.Sound('data//sfx//ambience.wav'),
             'landing': pygame.mixer.Sound('data//sfx//landing.mp3'),
+            'domain': pygame.mixer.Sound('data//sfx//domain.mp3'),
+            'ouch': pygame.mixer.Sound('data//sfx//ouch.mp3'),
         }
 
         self.sfx['ambience'].set_volume(0.2)
         self.sfx['shoot'].set_volume(0.4)
         self.sfx['hit'].set_volume(0.5)
         self.sfx['dash'].set_volume(0.3)
-        self.sfx['jump'].set_volume(1)
-        self.sfx['landing'].set_volume(0.8)
+        self.sfx['jump'].set_volume(0.5)
+        self.sfx['landing'].set_volume(0.4)
+        self.sfx['domain'].set_volume(0.8)
+        self.sfx['ouch'].set_volume(0.5)
 
         # khởi tạo đối tượng:
         #mây
@@ -131,19 +138,22 @@ class Test:
             self.leaf_spawners.append(pygame.Rect(4 + tree['pos'][0], 4 + tree['pos'][1], 23, 13)) # 4 4 rơi từ trái trên xuống dưới trái phải
         
         self.enemies = []
-        for spawner in self.tilemap.extract([('spawners',0),('spawners',1)]):
+        self.spec_enemies = []
+        for spawner in self.tilemap.extract([('spawners',0),('spawners',1),('spawners',2)]):
             if spawner['variant'] == 0:
                 self.player.pos = spawner['pos']
-            else:
+            elif spawner['variant'] == 1:
                 self.enemies.append(Enemy(self,spawner['pos'],(8,15)))
-
-
+            elif spawner['variant'] == 2:
+                self.spec_enemies.append(Spec_Enemy(self,spawner['pos'],(8,15)))
+            else:
+                pass
 
     def run(self):
         run = True
         
-        pygame.mixer.music.load('data//music.wav')
-        pygame.mixer.music.set_volume(0.5)
+        pygame.mixer.music.load('data//music.mp3')
+        pygame.mixer.music.set_volume(0.3)
         pygame.mixer.music.play(-1)
 
         # self.sfx['ambience'].play(-1)
@@ -154,7 +164,7 @@ class Test:
 
             self.screenshake = max(0, self.screenshake -1) #rung cam
 
-            if not len(self.enemies):
+            if not len(self.enemies)  and not len(self.spec_enemies):
                 self.transition += 1
                 if self.transition > 30:
                     self.level = min(self.level + 1, len(os.listdir('data//maps')) - 1)
@@ -165,7 +175,8 @@ class Test:
 
             if self.dead == 1:
                 self.load_level(self.level)
-                self.dead = 0 
+                self.dead = 0
+                self.player.health = 150 #hồi lại đầy máu
 
 
             # di chuyển cam
@@ -182,16 +193,18 @@ class Test:
             # tải vật thể trong map
             self.tilemap.render(self.display, offset=render_scroll)
 
-            # cập nhật mây mỗi khi chuyển qua 1 khung hình
+            # cập nhật mây mỗi khi chuyển qua 1 khung hìnhdddd
             self.spaceships.update()
             self.spaceships.render(self.display_2, offset=render_scroll)
 
             # cập nhật và hiển thị npc
+            for spec_enemy in self.spec_enemies.copy():
+                kill = spec_enemy.update(self.tilemap,(0,0))
+                spec_enemy.render(self.display, offset = render_scroll)
+
             for enemy in self.enemies.copy():
                 kill = enemy.update(self.tilemap,(0,0))
                 enemy.render(self.display, offset = render_scroll)
-                # if kill:
-                #     self.enemies.remove(enemy)
 
             # cập nhật và hiển thị nhân vật
             if not self.dead:
@@ -244,9 +257,6 @@ class Test:
                 if kill:
                     self.particles.remove(part)
 
-            #hiển thị đạn
-            self.player.display_bullet(render_scroll)
-
             # xử lý sự kiện nút
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
@@ -258,9 +268,8 @@ class Test:
                         self.movement[1] = True
                     if event.key == pygame.K_x:
                         self.player.dash()
-                    if event.key == pygame.K_q:
-                        self.player.skill()
-                        
+                    if event.key == pygame.K_SPACE: 
+                        self.player.use_skills()
 
                 if event.type == pygame.KEYUP:
                     # if event.key == pygame.K_UP or event.key == pygame.K_w:
@@ -288,7 +297,10 @@ class Test:
             screenshake_offset = (random.random() * self.screenshake - self.screenshake / 2,random.random() * self.screenshake - self.screenshake / 2 )
             self.screen.blit(pygame.transform.scale(self.display_2, self.screen.get_size()), screenshake_offset)
             
+            #hiển thị số mục tiêu còn lại
             self.text = self.font.render(": "+str(len(self.enemies)), True, self.green)
+            self.text = self.font.render(": "+str(self.player.health), True, self.green)
+
             self.screen.blit(self.enemy_img,(515,20))
             self.screen.blit(self.text,(555,20))
             pygame.display.update()
