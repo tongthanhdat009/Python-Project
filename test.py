@@ -101,9 +101,6 @@ class Test:
         #danh sách chứa đạn địch
         self.projectiles = []
 
-        #danh sách chứa skill player 
-        self.projectiles_player = []
-
         self.sparks = [] # hiệu ứng tia lửa
 
         self.level = 0 #biến lưu màn chơi
@@ -176,6 +173,7 @@ class Test:
             if self.dead == 1:
                 self.load_level(self.level)
                 self.dead = 0
+                self.projectiles = []
                 self.player.health = 150 #hồi lại đầy máu
 
 
