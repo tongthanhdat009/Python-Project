@@ -80,7 +80,7 @@ class PhysicsEntity:
 class Player(PhysicsEntity):
     def __init__(self, game, pos, size, health=150):
         super().__init__(game, 'player', pos, size)
-        self.air_time = 0 # thời gian trên không
+        self.air_time = 5 # thời gian trên không
         self.jump_count = 2 #số lần nhảy
         self.wall_slide = False #kiểm tra bám tường
         self.dashing = 0 #kiểm tra lướt
@@ -91,11 +91,11 @@ class Player(PhysicsEntity):
         super().update(tilemap, movement=movement)
 
         self.air_time += 1
-        
-        if self.air_time > 160 and self.wall_slide == False:
-            if not self.game.dead:
-                self.game.screenshake = max(16, self.game.screenshake)
-            self.game.dead += 1 #rơi ra khỏi map tự reset
+
+        #rơi ra khỏi map tự reset
+        if self.air_time > 160:
+            self.game.screenshake = max(16, self.game.screenshake)
+            self.game.dead += 1 
 
         #kiểm tra rơi
         if self.collisions['down']:
@@ -111,8 +111,10 @@ class Player(PhysicsEntity):
             self.velocity[1] = min(self.velocity[1], 0.5)
             if self.collisions['right']:
                 self.flip = False
+                self.air_time = 5
             else:
                 self.flip = True
+                self.air_time = 5
             self.set_action('wall_slide')
 
         #nếu rơi không chạm tường
@@ -324,7 +326,7 @@ class Enemy(PhysicsEntity):
 
 class Spec_Enemy(PhysicsEntity):
     def __init__(self, game, pos, size, health=100, healing=100):
-        super().__init__(game, 'enemy', pos, size)
+        super().__init__(game, 'spec_enemy', pos, size)
         self.walking = 0 #di chuyển
         self.health = health  #máu
         self.healing = healing #lượng hồi máu cho người chơi sau khi bị hạ gục
