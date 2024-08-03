@@ -86,8 +86,8 @@ class Player(PhysicsEntity):
         self.wall_slide = False #kiểm tra bám tường
         self.dashing = 0 #kiểm tra lướt
         self.health = health #máu
-        # self.cooldown_skill = 0 # thời gian hồi chiêu
-        # self.skill_dmg = 1000
+        self.cooldown_skill = 0 # thời gian hồi chiêu
+        self.skill_dmg = 100
     def update(self, tilemap, movement=(0, 0)):
         super().update(tilemap, movement=movement)
 
@@ -139,11 +139,11 @@ class Player(PhysicsEntity):
             self.velocity[0] = min(self.velocity[0] + 0.1, 0)   
 
         # kiểm tra giảm thời gian hồi chiêu
-        # if self.cooldown_skill > 0:
-        #     self.cooldown_skill -= 50  
-        # if self.cooldown_skill < 0:
-        #     self.cooldown_skill = 0  
-
+        if self.cooldown_skill > 0:
+            self.cooldown_skill -= 5
+        if self.cooldown_skill < 0:
+            self.cooldown_skill = 0  
+        print (self.cooldown_skill)
     def render(self, surf,offset=(0,0)):
         if abs(self.dashing) <= 50:
             super().render(surf,offset=offset)
@@ -220,13 +220,27 @@ class Player(PhysicsEntity):
                 transition_surf.set_colorkey((255, 255, 255))
                 self.game.display.blit(transition_surf, (0, 0))
             self.game.player.health = 150
-            # self.cooldown_skill = 0
+            self.cooldown_skill = 0
         else:
             self.game.dead = 0
 
     def health_check(self):
         if self.health > 150:
             self.health = 150
+    
+    def skill(self):
+        if self.cooldown_skill == 0:
+            if self.flip:
+                self.game.skills.append(Bullet(self.game,self.rect().centerx, self.rect().centery,-2,0,50))
+                for i in range(4):
+                    self.game.sparks.append(Spark((self.game.skills[-1].x,self.game.skills[-1].y), random.random() - 0.5 + math.pi, 2 + random.random()))
+                self.cooldown_skill = 500
+
+            elif not self.flip:
+                self.game.skills.append(Bullet(self.game,self.rect().centerx, self.rect().centery, 2,0,50))
+                for i in range(4):
+                    self.game.sparks.append(Spark((self.game.skills[-1].x,self.game.skills[-1].y), random.random() - 0.5, 2 + random.random()))
+                self.cooldown_skill = 500
 
 #kế thừa
 class Enemy(PhysicsEntity):
@@ -307,7 +321,7 @@ class Enemy(PhysicsEntity):
                     transition_surf.set_colorkey((255, 255, 255))
                     self.game.display.blit(transition_surf, (0, 0))
                 self.game.player.health = self.health
-                # self.game.player.cooldown_skill = 0
+                self.game.player.cooldown_skill = 0
             else:
                 self.game.dead = 0
             return True    
@@ -408,7 +422,7 @@ class Spec_Enemy(PhysicsEntity):
                     transition_surf.set_colorkey((255, 255, 255))
                     self.game.display.blit(transition_surf, (0, 0))
                 self.game.player.health = self.health
-                # self.game.player.cooldown_skill = 0
+                self.game.player.cooldown_skill = 0
             else:
                 self.game.dead = 0
             return True    

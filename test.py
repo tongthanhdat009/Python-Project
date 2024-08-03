@@ -101,6 +101,9 @@ class Test:
         #danh sách chứa đạn địch
         self.projectiles = []
 
+        #danh sách chứa chiêu người chơi cần được xử lý:
+        self.skills = []
+
         self.sparks = [] # hiệu ứng tia lửa
 
         self.level = 0 #biến lưu màn chơi
@@ -171,9 +174,10 @@ class Test:
                 self.transition += 1
 
             if self.dead == 1:
+                self.projectiles = []
+                self.skills = []
                 self.load_level(self.level)
                 self.dead = 0
-                self.projectiles = []
                 self.player.health = 150 #hồi lại đầy máu
 
 
@@ -232,28 +236,19 @@ class Test:
                             #hiệu ứng nổ khi trúng đạn
                             self.sparks.append(Spark(self.player.rect().center, angle, 2 + random.random()))
                             self.particles.append(particle(self, 'particle', self.player.rect().center, velocity=[math.cos(angle + math.pi) * speed * 0.5, math.sin(angle + math.pi) * speed * 0.5], frame=random.randint(0, 7)))
-                # projectile[0][0] += projectile[1]
-                # projectile[2] += 1
-                # img = self.assets['projectile']
-                # self.display.blit(img,(projectile[0][0] - img.get_width()/2 - render_scroll[0], projectile[0][1] - img.get_height() /2 - render_scroll[1]))
-                # if self.tilemap.solid_check(projectile[0]): #đạn biến mất nếu gặp vật cản
-                #     self.projectiles.remove(projectile)
-                # elif projectile[2] > 360: #thời gian đạn tồn tại
-                #     self.projectiles.remove(projectile)
-                # #trường hợp người không dash và để trúng đạn
-                # elif abs(self.player.dashing)<50:
-                #     if self.player.rect().collidepoint(projectile[0]):
-                #         self.player.hit(25)
-                #         # print(self.player.health)
-                #         self.projectiles.remove(projectile)
-                #         self.screenshake = max(16, self.screenshake)
-                #         for i in range(30):
-                #             angle = random.random() * math.pi * 2
-                #             speed = random.random() * 5
-                #             #hiệu ứng nổ khi trúng đạn
-                #             self.sparks.append(Spark(self.player.rect().center, angle, 2 + random.random()))
-                #             self.particles.append(particle(self, 'particle', self.player.rect().center, velocity=[math.cos(angle + math.pi) * speed * 0.5, math.sin(angle + math.pi) * speed * 0.5], frame=random.randint(0, 7)))
-                
+            # kĩ năng từ người chơi
+            for skill in self.skills.copy():
+                skill.x_update()
+                skill.time_checker()
+                img = self.assets['projectile']
+                skill.render(img, render_scroll)
+                if skill.bullet_solid_check():
+                    self.skills.remove(skill)
+                elif skill.time_checker():
+                    self.skills.remove(skill)
+                elif skill.enemy_class_checker(skill, self.enemies, self.spec_enemies, self.player.skill_dmg):
+                    self.skills.remove(skill)
+
             #hiển thị tia lửa khi trúng đạn
             for spk in self.sparks.copy():
                 kill = spk.update()
@@ -287,7 +282,7 @@ class Test:
                     if event.key == pygame.K_x:
                         self.player.dash()
                     if event.key == pygame.K_SPACE: 
-                        self.player.use_skills()
+                        self.player.skill()
 
                 if event.type == pygame.KEYUP:
                     # if event.key == pygame.K_UP or event.key == pygame.K_w:
