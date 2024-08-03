@@ -1,6 +1,7 @@
 import math
 import random
 import pygame
+from script.bullet import Bullet
 from script.particles import particle
 from script.spark import Spark
 
@@ -206,9 +207,9 @@ class Player(PhysicsEntity):
                 self.game.sfx['dash'].play()
                 self.dashing = 60
     
-    def hit(self): 
+    def hit(self, amount = 10): 
         self.game.sfx['hit'].play()                    
-        self.game.player.health -= 10
+        self.game.player.health -= amount
         if self.game.player.health <= 0:
             self.game.dead += 1
             #reset hiệu ứng chuyển cảnh
@@ -264,14 +265,14 @@ class Enemy(PhysicsEntity):
                 if (abs(dis[1]) < 16):
                     if (self.flip and dis[0] < 0):
                         self.game.sfx['shoot'].play()
-                        self.game.projectiles.append([[self.rect().centerx - 7, self.rect().centery], -1.5, 0])
+                        self.game.projectiles.append(Bullet(self.game,self.rect().centerx, self.rect().centery,-2,0,50))
                         for i in range(4):
-                            self.game.sparks.append(Spark(self.game.projectiles[-1][0], random.random() - 0.5 + math.pi, 2 + random.random()))
+                            self.game.sparks.append(Spark((self.game.projectiles[-1].x,self.game.projectiles[-1].y), random.random() - 0.5 + math.pi, 2 + random.random()))
                     if (not self.flip and dis[0] > 0):
                         self.game.sfx['shoot'].play()
-                        self.game.projectiles.append([[self.rect().centerx + 7, self.rect().centery], 1.5, 0])
+                        self.game.projectiles.append(Bullet(self.game,self.rect().centerx, self.rect().centery,2,0,50))
                         for i in range(4):
-                            self.game.sparks.append(Spark(self.game.projectiles[-1][0], random.random() - 0.5, 2 + random.random()))
+                            self.game.sparks.append(Spark((self.game.projectiles[-1].x,self.game.projectiles[-1].y), random.random() - 0.5, 2 + random.random()))
         elif random.random() < 0.01:
             self.walking = random.randint(30, 120)
         
@@ -362,19 +363,19 @@ class Spec_Enemy(PhysicsEntity):
             self.walking = max(0, self.walking - 1)
             if not self.walking: #cho npc đứng yên để bắn
                 dis = (self.game.player.pos[0] - self.pos[0], self.game.player.pos[1] - self.pos[1])
-                if (abs(dis[1]) < 30):
+                if (abs(dis[1]) < 50):
                     self.game.sfx['shoot'].play()
-                    self.game.projectiles.append([[self.rect().centerx - 7, self.rect().centery], -2, 0])
-                    self.game.projectiles.append([[self.rect().centerx - 7, self.rect().centery-7], -2, 0])
+                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx - 7, self.rect().centery - 7,-2,0,50))
+                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx - 7, self.rect().centery,-2,0,50))
                     for i in range(4):
-                        self.game.sparks.append(Spark(self.game.projectiles[-1][0], random.random() - 0.5 + math.pi, 2 + random.random()))
+                        self.game.sparks.append(Spark((self.game.projectiles[-1].x,self.game.projectiles[-1].y), random.random() - 0.5 + math.pi, 2 + random.random()))
                     self.game.sfx['shoot'].play()
-                    self.game.projectiles.append([[self.rect().centerx + 7, self.rect().centery], 2, 0])
-                    self.game.projectiles.append([[self.rect().centerx + 7, self.rect().centery-7], 2, 0])
+                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx + 7, self.rect().centery -7 , 2, 0, 50))
+                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx + 7, self.rect().centery, 2, 0, 50))
                     for i in range(4):
-                        self.game.sparks.append(Spark(self.game.projectiles[-1][0], random.random() - 0.5, 2 + random.random()))
+                        self.game.sparks.append(Spark((self.game.projectiles[-1].x,self.game.projectiles[-1].y), random.random() - 0.5, 2 + random.random()))
         elif random.random() < 0.01:
-            self.walking = random.randint(30, 200)
+            self.walking = random.randint(30, 40)
         
         super().update(tilemap, movement=movement)
         
@@ -407,7 +408,7 @@ class Spec_Enemy(PhysicsEntity):
                     transition_surf.set_colorkey((255, 255, 255))
                     self.game.display.blit(transition_surf, (0, 0))
                 self.game.player.health = self.health
-                self.game.player.cooldown_skill = 0
+                # self.game.player.cooldown_skill = 0
             else:
                 self.game.dead = 0
             return True    
@@ -422,6 +423,8 @@ class Spec_Enemy(PhysicsEntity):
         surf.blit(self.game.assets['gun'], (self.rect().centerx + 8 - offset[0], self.rect().centery - 8 - offset[1]))
         surf.blit(pygame.transform.flip(self.game.assets['gun'], True, False), (self.rect().centerx - 8 - self.game.assets['gun'].get_width() - offset[0], self.rect().centery -8 - offset[1]))
         surf.blit(self.game.assets['gun'], (self.rect().centerx + 8 - offset[0], self.rect().centery - offset[1]))
+
+
 
     
 

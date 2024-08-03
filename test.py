@@ -212,18 +212,17 @@ class Test:
             # tạo đạn từ địch
             # [[x, y], direction,timer]
             for projectile in self.projectiles.copy():
-                projectile[0][0] += projectile[1]
-                projectile[2] += 1
+                projectile.x_update()
+                projectile.time_checker()
                 img = self.assets['projectile']
-                self.display.blit(img,(projectile[0][0] - img.get_width()/2 - render_scroll[0], projectile[0][1] - img.get_height() /2 - render_scroll[1]))
-                if self.tilemap.solid_check(projectile[0]): #đạn biến mất nếu gặp vật cản
+                projectile.render(img, render_scroll)
+                if projectile.bullet_solid_check():
                     self.projectiles.remove(projectile)
-                elif projectile[2] > 360: #thời gian đạn tồn tại
+                elif projectile.time_checker():
                     self.projectiles.remove(projectile)
-                #trường hợp người không dash và để trúng đạn
                 elif abs(self.player.dashing)<50:
-                    if self.player.rect().collidepoint(projectile[0]):
-                        self.player.hit()
+                    if projectile.player_checker():
+                        self.player.hit(25)
                         # print(self.player.health)
                         self.projectiles.remove(projectile)
                         self.screenshake = max(16, self.screenshake)
@@ -233,6 +232,27 @@ class Test:
                             #hiệu ứng nổ khi trúng đạn
                             self.sparks.append(Spark(self.player.rect().center, angle, 2 + random.random()))
                             self.particles.append(particle(self, 'particle', self.player.rect().center, velocity=[math.cos(angle + math.pi) * speed * 0.5, math.sin(angle + math.pi) * speed * 0.5], frame=random.randint(0, 7)))
+                # projectile[0][0] += projectile[1]
+                # projectile[2] += 1
+                # img = self.assets['projectile']
+                # self.display.blit(img,(projectile[0][0] - img.get_width()/2 - render_scroll[0], projectile[0][1] - img.get_height() /2 - render_scroll[1]))
+                # if self.tilemap.solid_check(projectile[0]): #đạn biến mất nếu gặp vật cản
+                #     self.projectiles.remove(projectile)
+                # elif projectile[2] > 360: #thời gian đạn tồn tại
+                #     self.projectiles.remove(projectile)
+                # #trường hợp người không dash và để trúng đạn
+                # elif abs(self.player.dashing)<50:
+                #     if self.player.rect().collidepoint(projectile[0]):
+                #         self.player.hit(25)
+                #         # print(self.player.health)
+                #         self.projectiles.remove(projectile)
+                #         self.screenshake = max(16, self.screenshake)
+                #         for i in range(30):
+                #             angle = random.random() * math.pi * 2
+                #             speed = random.random() * 5
+                #             #hiệu ứng nổ khi trúng đạn
+                #             self.sparks.append(Spark(self.player.rect().center, angle, 2 + random.random()))
+                #             self.particles.append(particle(self, 'particle', self.player.rect().center, velocity=[math.cos(angle + math.pi) * speed * 0.5, math.sin(angle + math.pi) * speed * 0.5], frame=random.randint(0, 7)))
                 
             #hiển thị tia lửa khi trúng đạn
             for spk in self.sparks.copy():
