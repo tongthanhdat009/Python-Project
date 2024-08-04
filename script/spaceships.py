@@ -15,19 +15,19 @@ class spaceship:
         render_pos=(self.pos[0] - offset[0] * self.depth, self.pos[1] - offset[1]*self.depth)
         surf.blit(self.img, (render_pos[0] % (surf.get_width() + self.img.get_width()) -self.img.get_width(),render_pos[1] % (surf.get_height() + self.img.get_height())-self.img.get_height()))
 class spaceships:
-    def __init__(self, cloud_images, count=16):
-        self.clouds =[]
+    def __init__(self, space_ship_images, count=16):
+        self.space_ships =[]
         
         #chọn xuất ngẫu nhiên mây
         for i in range(count):
-            self.clouds.append(spaceship((random.random()*99999,random.random()*99999),random.choice(cloud_images), random.random()*0.05+0.05, random.random()*0.6+0.2))
+            self.space_ships.append(spaceship((random.random()*99999,random.random()*99999),random.choice(space_ship_images), random.random()*0.05+0.05, random.random()*0.6+0.2))
 
-        self.clouds.sort(key=lambda x: x.depth)
+        self.space_ships.sort(key=lambda x: x.depth)
     
     def update(self):
-        for cloud in self.clouds:
-            cloud.update()
+        for space_ship in self.space_ships:
+            space_ship.update()
     
     def render(self, surf, offset=(0,0)):
-        for cloud in self.clouds:
-            cloud.render(surf, offset=offset)
+        for space_ship in self.space_ships:
+            space_ship.render(surf, offset=offset)

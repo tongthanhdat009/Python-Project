@@ -2,11 +2,12 @@ import math
 import os
 import random
 import sys
+import time
 import pygame
 
 from script.entities import PhysicsEntity, Player, Enemy, Spec_Enemy
 from script.spark import Spark
-from script.utils import load_image, load_images, animation
+from script.utils import change_opacity, load_image, load_images, animation
 from script.tilemap import Tilemap
 from script.spaceships import spaceships
 from script.particles import particle
@@ -61,6 +62,7 @@ class Test:
             'spec_enemy//run': animation(load_images('entities//spec_enemy//run'), img_dur= 7),
             'gun':load_image('gun.png'),
             'projectile':load_image('projectile.png'),
+            'skill': load_image('skill.png'),
             'menu':load_image('menu//bg_menu.jpg')
         }
         
@@ -120,12 +122,22 @@ class Test:
         self.white = (255, 255, 255)
         self.green = (0, 255, 0)
         self.font = pygame.font.Font('data//font//CyberpunkCraftpixPixel.otf', 32)
-        self.a = 0
-        self.text = self.font.render(": "+str(len(self.enemies)), True, self.green)
-        self.textRect = self.text.get_rect()
-        self.textRect = (640//2,480//2)
+        
+        #đếm số npc còn lại
+        self.enemies_count = self.font.render(": "+str(len(self.enemies)), True, self.green)
+        self.enemies_countRect = self.enemies_count.get_rect()
+        self.enemies_countRect = (640//2,480//2)
         self.enemy_img = pygame.transform.scale(load_image('entities//enemy//idle//0.png'),(35,35))
 
+        # hiển thị máu người chơi
+        self.health_player_count = self.font.render(": "+str(self.player.health), True, self.green)
+        self.health_player_countRect = self.enemies_count.get_rect()
+        self.health_player_countRect = (640//2,480//2)
+        self.player_img = pygame.transform.scale(load_image('entities//player//idle//0.png'),(35,35))
+
+        #hiển thị hồi chiêu người chơi
+        self.skill_img = pygame.transform.scale(load_image('skill.png'),(25,25))
+        self.skill_img_cd = pygame.transform.scale(load_image('skill_cd.png'),(25,25))
 
     def load_level(self,map_id):
         self.tilemap.load('data//maps//' + str(map_id) +'.json')
@@ -142,6 +154,7 @@ class Test:
         for spawner in self.tilemap.extract([('spawners',0),('spawners',1),('spawners',2)]):
             if spawner['variant'] == 0:
                 self.player.pos = spawner['pos']
+                self.player.health = 150
             elif spawner['variant'] == 1:
                 self.enemies.append(Enemy(self,spawner['pos'],(8,15)))
             elif spawner['variant'] == 2:
@@ -174,8 +187,8 @@ class Test:
                 self.transition += 1
 
             if self.dead == 1:
-                self.projectiles = []
-                self.skills = []
+                self.projectiles.clear()
+                self.skills.clear()
                 self.load_level(self.level)
                 self.dead = 0
                 self.player.health = 150 #hồi lại đầy máu
@@ -214,7 +227,6 @@ class Test:
                 self.player.render(self.display, offset=render_scroll)
 
             # tạo đạn từ địch
-            # [[x, y], direction,timer]
             for projectile in self.projectiles.copy():
                 projectile.x_update()
                 projectile.time_checker()
@@ -224,9 +236,9 @@ class Test:
                     self.projectiles.remove(projectile)
                 elif projectile.time_checker():
                     self.projectiles.remove(projectile)
-                elif abs(self.player.dashing)<50:
+                elif abs(self.player.dashing)<50 and self.dead == 0:
                     if projectile.player_checker():
-                        self.player.hit(25)
+                        self.player.hit(projectile.damage)
                         # print(self.player.health)
                         self.projectiles.remove(projectile)
                         self.screenshake = max(16, self.screenshake)
@@ -234,24 +246,31 @@ class Test:
                             angle = random.random() * math.pi * 2
                             speed = random.random() * 5
                             #hiệu ứng nổ khi trúng đạn
-                            self.sparks.append(Spark(self.player.rect().center, angle, 2 + random.random()))
+                            self.sparks.append(Spark(self.player.rect().center, angle, 2 + random.random(),(240, 72, 50)))
                             self.particles.append(particle(self, 'particle', self.player.rect().center, velocity=[math.cos(angle + math.pi) * speed * 0.5, math.sin(angle + math.pi) * speed * 0.5], frame=random.randint(0, 7)))
+            
             # kĩ năng từ người chơi
             for skill in self.skills.copy():
                 skill.x_update()
                 skill.time_checker()
-                img = self.assets['projectile']
+                img = self.assets['skill']
                 skill.render(img, render_scroll)
                 if skill.bullet_solid_check():
                     self.skills.remove(skill)
                 elif skill.time_checker():
                     self.skills.remove(skill)
                 elif skill.enemy_class_checker(skill, self.enemies, self.spec_enemies, self.player.skill_dmg):
+                    for i in range(30):
+                        angle = random.random() * math.pi * 2
+                        speed = random.random() * 5
+                        #hiệu ứng nổ khi trúng đạn
+                        self.sparks.append(Spark(skill.rect().center, angle, 2 + random.random(), (187, 255, 0)))
+                        self.particles.append(particle(self, 'particle', skill.rect().center, velocity=[math.cos(angle + math.pi) * speed * 0.5, math.sin(angle + math.pi) * speed * 0.5], frame=random.randint(0, 7)))
                     self.skills.remove(skill)
 
             #hiển thị tia lửa khi trúng đạn
             for spk in self.sparks.copy():
-                kill = spk.update()
+                kill = spk.update() 
                 spk.render(self.display, offset=render_scroll)
                 if kill:
                     self.sparks.remove(spk)
@@ -303,7 +322,7 @@ class Test:
                 transition_surf.set_colorkey((255, 255, 255))
                 self.display.blit(transition_surf, (0, 0))
 
-            for offset in [(-1,0), (1,0),(0,-1),(0,1)]:
+            for offset in [(-1,0), (1,0), (0,-1), (0,1)]:
                 self.display_2.blit(self.display,offset)
 
             #hiệu ứng rung màn hình
@@ -311,11 +330,21 @@ class Test:
             self.screen.blit(pygame.transform.scale(self.display_2, self.screen.get_size()), screenshake_offset)
             
             #hiển thị số mục tiêu còn lại
-            self.text = self.font.render(": "+str(len(self.enemies)), True, self.green)
-            self.text = self.font.render(": "+str(self.player.health), True, self.green)
-
+            self.enemies_count = self.font.render(": "+str(len(self.enemies + self.spec_enemies)), True, self.green)
             self.screen.blit(self.enemy_img,(515,20))
-            self.screen.blit(self.text,(555,20))
+            self.screen.blit(self.enemies_count,(555,20))
+            
+            #hiển thị máu người chơi
+            self.health_player_count = self.font.render(": "+str(self.player.health), True, self.green)
+            self.screen.blit(self.player_img,(0,20))
+            self.screen.blit(self.health_player_count,(50,20))
+
+            #hiển thị hồi chiêu người chơi
+            if(self.player.cooldown_skill > 0):
+                self.screen.blit(self.skill_img_cd,(5,70))
+            else:
+                self.screen.blit(self.skill_img,(5,70))
+
             pygame.display.update()
             self.clock.tick(60)
 

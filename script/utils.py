@@ -14,7 +14,12 @@ def load_images(path):
     for img_name in os.listdir(BASE_IMG_PATH + path):
         images.append(load_image(path + '//' + img_name))
     return images
-
+#chỉnh độ trong suốt của ảnh
+def change_opacity(image, opacity):
+    alpha = image.split()[3]
+    alpha = alpha.point(lambda p: p * opacity)
+    image.putalpha(alpha)
+    return image
 # hoạt ảnh
 class animation:
     def __init__(self, images, img_dur=5,loop=True):
