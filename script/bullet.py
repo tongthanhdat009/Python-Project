@@ -42,13 +42,18 @@ class Bullet:
             return False
     
     #kiểm tra skill nhân vật chạm npc
-    def enemy_class_checker(self, skill, enemies, spec_enemies, dmg):
+    def enemy_class_checker(self, skill, enemies, spec_enemies, bosses, dmg):
         for enemy in enemies:
             if skill.rect().colliderect(enemy.rect()):
                 enemy.take_damage(dmg)
                 return True
             
         for enemy in spec_enemies:
+            if skill.rect().colliderect(enemy.rect()):
+                enemy.take_damage(dmg)
+                return True
+        
+        for enemy in bosses:
             if skill.rect().colliderect(enemy.rect()):
                 enemy.take_damage(dmg)
                 return True

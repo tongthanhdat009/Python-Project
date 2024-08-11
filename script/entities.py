@@ -247,7 +247,7 @@ class Player(PhysicsEntity):
 
 #kế thừa
 class Enemy(PhysicsEntity):
-    def __init__(self, game, pos, size, health=150, dmg = 30):
+    def __init__(self, game, pos, size, health=150, dmg = 150):
         super().__init__(game, 'enemy', pos, size)
         
         self.dmg = dmg
@@ -338,7 +338,6 @@ class Enemy(PhysicsEntity):
             surf.blit(pygame.transform.flip(self.game.assets['gun'], True, False), (self.rect().centerx - 8 - self.game.assets['gun'].get_width() - offset[0], self.rect().centery - offset[1]))
         else:
             surf.blit(self.game.assets['gun'], (self.rect().centerx + 8 - offset[0], self.rect().centery - offset[1]))
-
 
 class Spec_Enemy(PhysicsEntity):
     def __init__(self, game, pos, size, health=175, healing=100, dmg = 50):
@@ -439,104 +438,104 @@ class Spec_Enemy(PhysicsEntity):
         surf.blit(pygame.transform.flip(self.game.assets['gun'], True, False), (self.rect().centerx - 8 - self.game.assets['gun'].get_width() - offset[0], self.rect().centery -8 - offset[1]))
         surf.blit(self.game.assets['gun'], (self.rect().centerx + 8 - offset[0], self.rect().centery - offset[1]))
 
-# class Boss(PhysicsEntity):
-#     def __init__(self, game, pos, size, health=1000, healing=100):
-#         super().__init__(game, 'boss', pos, size)
-#         self.walking = 0 #di chuyển
-#         self.health = health  #máu
-#         self.healing = healing #lượng hồi máu cho người chơi sau khi bị hạ gục
+class Boss(PhysicsEntity):
+    def __init__(self, game, pos, size, health=50):
+        super().__init__(game, 'spec_enemy', pos, size)
+        self.walking = 0 #di chuyển
+        self.health = health  #máu
         
-#     def take_damage(self, amount=20): #giảm máu npc nếu bị player dash trúng
-#         self.health -= amount
-#         if self.health <= 0:
-#             self.die()
-#             self.player_healing()
-            
-#     def player_healing(self):
-#         self.game.player.health += self.healing
-#         self.game.player.health_check()
+    def take_damage(self, amount=20): #giảm máu npc nếu bị player dash trúng
+        self.health -= amount
+        if self.health <= 0:
+            self.die()
 
-#     def die(self): #xóa npc nếu máu < 0
-#         self.game.sfx['hit'].play()
-#         for i in range(30):  # hiẹu ứng khi chết 
-#             angle = random.random() * math.pi * 2
-#             speed = random.random() * 5
-#             self.game.sparks.append(Spark(self.rect().center, angle, 2 + random.random()))
-#             self.game.particles.append(particle(self.game, 'particle', self.rect().center, velocity=[math.cos(angle + math.pi) * speed * 0.5, math.sin(angle + math.pi) * speed * 0.5], frame=random.randint(0, 7)))
-#         self.game.spec_enemies.remove(self)  
+    def die(self): #xóa npc nếu máu < 0
+        self.game.sfx['hit'].play()
+        for i in range(30):  # hiẹu ứng khi chết 
+            angle = random.random() * math.pi * 2
+            speed = random.random() * 5
+            self.game.sparks.append(Spark(self.rect().center, angle, 2 + random.random(),(240, 72, 50)))
+            self.game.particles.append(particle(self.game, 'particle', self.rect().center, velocity=[math.cos(angle + math.pi) * speed * 0.5, math.sin(angle + math.pi) * speed * 0.5], frame=random.randint(0, 7)))
+        self.game.bosses.remove(self)  
     
-#     def update(self, tilemap, movement=(0, 0)):
-#         if self.walking:
-#             if tilemap.solid_check((self.rect().centerx + (-7 if self.flip else 7), self.pos[1] + 23)): #điều kiện chuyển hướng cho npc
-#                 if (self.collisions['right'] or self.collisions['left']):
-#                     self.flip = not self.flip
-#                 else:
-#                     movement = (movement[0] - 0.5 if self.flip else 0.5, movement[1])
-#             else:
-#                 self.flip = not self.flip
-#             self.walking = max(0, self.walking - 1)
-#             if not self.walking: #cho npc đứng yên để bắn
-#                 dis = (self.game.player.pos[0] - self.pos[0], self.game.player.pos[1] - self.pos[1])
-#                 if (abs(dis[1]) < 50):
-#                     self.game.sfx['shoot'].play()
-#                     self.game.projectiles.append(Bullet(self.game,self.rect().centerx - 7, self.rect().centery - 7,-2,0,50))
-#                     self.game.projectiles.append(Bullet(self.game,self.rect().centerx - 7, self.rect().centery,-2,0,50))
-#                     for i in range(4):
-#                         self.game.sparks.append(Spark((self.game.projectiles[-1].x,self.game.projectiles[-1].y), random.random() - 0.5 + math.pi, 2 + random.random()))
-#                     self.game.sfx['shoot'].play()
-#                     self.game.projectiles.append(Bullet(self.game,self.rect().centerx + 7, self.rect().centery -7 , 2, 0, 50))
-#                     self.game.projectiles.append(Bullet(self.game,self.rect().centerx + 7, self.rect().centery, 2, 0, 50))
-#                     for i in range(4):
-#                         self.game.sparks.append(Spark((self.game.projectiles[-1].x,self.game.projectiles[-1].y), random.random() - 0.5, 2 + random.random()))
-#         elif random.random() < 0.01:
-#             self.walking = random.randint(30, 40)
+    def update(self, tilemap, movement=(0, 0)):
+        if self.walking:
+            if tilemap.solid_check((self.rect().centerx + (-7 if self.flip else 7), self.pos[1] + 23)): #điều kiện chuyển hướng cho npc
+                if (self.collisions['right'] or self.collisions['left']):
+                    self.flip = not self.flip
+                else:
+                    movement = (movement[0] - 0.5 if self.flip else 0.5, movement[1])
+            else:
+                self.flip = not self.flip
+            self.walking = max(0, self.walking - 2)
+            if not self.walking: #cho npc đứng yên để bắn
+                dis = (self.game.player.pos[0] - self.pos[0], self.game.player.pos[1] - self.pos[1])
+                if (abs(dis[1]) < 500):
+                    self.game.sfx['shoot'].play()
+                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx + 7, self.rect().centery - 28,-2,0,50))
+                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx, self.rect().centery - 21,-2,0,50))
+                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx - 7, self.rect().centery - 14,-2,0,50))
+                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx - 7, self.rect().centery - 7,-2,0,50))
+                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx - 7, self.rect().centery,-2,0,50))
+                    for i in range(4):
+                        self.game.sparks.append(Spark((self.game.projectiles[-1].x,self.game.projectiles[-1].y), random.random() - 0.5 + math.pi, 2 + random.random(),(240, 72, 50)))
+                    self.game.sfx['shoot'].play()
+                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx -7, self.rect().centery - 28,2,0,50))
+                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx, self.rect().centery -21 , 2, 0, 50))
+                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx + 7, self.rect().centery -14 , 2, 0, 50))
+                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx + 7, self.rect().centery -7 , 2, 0, 50))
+                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx + 7, self.rect().centery, 2, 0, 50))
+                    for i in range(4):
+                        self.game.sparks.append(Spark((self.game.projectiles[-1].x,self.game.projectiles[-1].y), random.random() - 0.5, 2 + random.random(),(240, 72, 50)))
+        elif random.random() < 0.1:
+            self.walking = random.randint(30, 40)
         
-#         super().update(tilemap, movement=movement)
+        super().update(tilemap, movement=movement)
         
-#         if movement[0] != 0:
-#             self.set_action('run')
-#         else:
-#             self.set_action('idle')
+        if movement[0] != 0:
+            self.set_action('run')
+        else:
+            self.set_action('idle')
         
-#         #player dash trúng sẽ trừ máu enemy
-#         if abs(self.game.player.dashing) >= 50:
-#             if self.rect().colliderect(self.game.player.rect()): #kiểm tra nếu player dash trúng npc thì sẽ trừ máu npc
-#                 self.game.screenshake = max(16, self.game.screenshake)
-#                 self.game.sfx['hit'].play()
-#                 self.take_damage(abs(self.game.player.dashing))  
-#                 self.game.player.stop_dash()
-#                 return True
+        #player dash trúng sẽ trừ máu enemy
+        if abs(self.game.player.dashing) >= 50:
+            if self.rect().colliderect(self.game.player.rect()): #kiểm tra nếu player dash trúng npc thì sẽ trừ máu npc
+                self.game.screenshake = max(16, self.game.screenshake)
+                self.game.sfx['hit'].play()
+                self.take_damage(abs(self.game.player.dashing))  
+                self.game.player.stop_dash()
+                return True
             
-#         # trừ máu player nếu layer player đè trên enemy  
-#         if self.rect().colliderect(self.game.player.rect()) and abs(self.game.player.dashing) < 50:
-#             damage_amount = 1  # lượng máu sẽ giảm
-#             self.game.player.health -= damage_amount  # giảm máu
-#             self.game.sfx['ouch'].play()
-#             if self.game.player.health <= 0:
-#                 self.game.dead += 1
-#                 #reset hiệu ứng chuyển cảnh
-#                 self.game.transition = -50
-#                 if self.game.transition:
-#                     transition_surf = pygame.Surface(self.game.display.get_size())
-#                     pygame.draw.circle(transition_surf, (255, 255, 255), (self.game.display.get_width() // 2, self.game.display.get_height() // 2), (30 - abs(self.game.transition)) * 8)
-#                     transition_surf.set_colorkey((255, 255, 255))
-#                     self.game.display.blit(transition_surf, (0, 0))
-#                 self.game.player.health = self.health
-#                 self.game.player.cooldown_skill = 0
-#             else:
-#                 self.game.dead = 0
-#             return True    
+        # trừ máu player nếu layer player đè trên enemy  
+        if self.rect().colliderect(self.game.player.rect()) and abs(self.game.player.dashing) < 50:
+            damage_amount = 1  # lượng máu sẽ giảm
+            self.game.player.health -= damage_amount  # giảm máu
+            self.game.sfx['ouch'].play()
+            if self.game.player.health <= 0:
+                self.game.dead += 1
+                #reset hiệu ứng chuyển cảnh
+                self.game.transition = -50
+                if self.game.transition:
+                    transition_surf = pygame.Surface(self.game.display.get_size())
+                    pygame.draw.circle(transition_surf, (255, 255, 255), (self.game.display.get_width() // 2, self.game.display.get_height() // 2), (30 - abs(self.game.transition)) * 8)
+                    transition_surf.set_colorkey((255, 255, 255))
+                    self.game.display.blit(transition_surf, (0, 0))
+                self.game.player.health = self.health
+                self.game.player.cooldown_skill = 0
+            else:
+                self.game.dead = 0
+            return True    
 
-#     def hit(self, amount = 20):
-#         self.take_damage(amount)
+    def hit(self, amount = 20):
+        self.take_damage(amount)
 
-#     def render(self, surf, offset=(0, 0)):
-#         super().render(surf, offset=offset)
-#         #render 4 súng cho spec_enemy
-#         surf.blit(pygame.transform.flip(self.game.assets['gun'], True, False), (self.rect().centerx - 8 - self.game.assets['gun'].get_width() - offset[0], self.rect().centery - offset[1]))
-#         surf.blit(self.game.assets['gun'], (self.rect().centerx + 8 - offset[0], self.rect().centery - 8 - offset[1]))
-#         surf.blit(pygame.transform.flip(self.game.assets['gun'], True, False), (self.rect().centerx - 8 - self.game.assets['gun'].get_width() - offset[0], self.rect().centery -8 - offset[1]))
-#         surf.blit(self.game.assets['gun'], (self.rect().centerx + 8 - offset[0], self.rect().centery - offset[1]))
+    def render(self, surf, offset=(0, 0)):
+        super().render(surf, offset=offset)
+        #render 4 súng cho spec_enemy
+        surf.blit(pygame.transform.flip(self.game.assets['gun'], True, False), (self.rect().centerx - 8 - self.game.assets['gun'].get_width() - offset[0], self.rect().centery - offset[1]))
+        surf.blit(self.game.assets['gun'], (self.rect().centerx + 8 - offset[0], self.rect().centery - 8 - offset[1]))
+        surf.blit(pygame.transform.flip(self.game.assets['gun'], True, False), (self.rect().centerx - 8 - self.game.assets['gun'].get_width() - offset[0], self.rect().centery -8 - offset[1]))
+        surf.blit(self.game.assets['gun'], (self.rect().centerx + 8 - offset[0], self.rect().centery - offset[1]))
 
 
     

@@ -5,9 +5,9 @@ import sys
 import time
 import pygame
 
-from script.entities import PhysicsEntity, Player, Enemy, Spec_Enemy
+from script.entities import Boss, PhysicsEntity, Player, Enemy, Spec_Enemy
 from script.spark import Spark
-from script.utils import change_opacity, load_image, load_images, animation
+from script.utils import load_image, load_images, animation
 from script.tilemap import Tilemap
 from script.spaceships import spaceships
 from script.particles import particle
@@ -142,6 +142,9 @@ class Test:
     def load_level(self,map_id):
         self.tilemap.load('data//maps//' + str(map_id) +'.json')
 
+        self.projectiles = []
+        self.skills = []
+
         # tạo hoạt ảnh lá rơi
         self.leaf_spawners = []
         self.tilemap.extract([('large_decor', 2)], keep=True)
@@ -151,7 +154,8 @@ class Test:
         
         self.enemies = []
         self.spec_enemies = []
-        for spawner in self.tilemap.extract([('spawners',0),('spawners',1),('spawners',2)]):
+        self.bosses = []
+        for spawner in self.tilemap.extract([('spawners',0),('spawners',1),('spawners',2),('spawners',3)]):
             if spawner['variant'] == 0:
                 self.player.pos = spawner['pos']
                 self.player.health = 150
@@ -159,8 +163,8 @@ class Test:
                 self.enemies.append(Enemy(self,spawner['pos'],(8,15)))
             elif spawner['variant'] == 2:
                 self.spec_enemies.append(Spec_Enemy(self,spawner['pos'],(8,15)))
-            else:
-                pass
+            elif spawner['variant'] == 3:
+                self.bosses.append(Boss(self,spawner['pos'],(8,15)))
 
     def run(self):
         run = True
@@ -177,7 +181,7 @@ class Test:
 
             self.screenshake = max(0, self.screenshake -1) #rung cam
 
-            if not len(self.enemies)  and not len(self.spec_enemies):
+            if not len(self.enemies)  and not len(self.spec_enemies) and not len(self.bosses):
                 self.transition += 1
                 if self.transition > 30:
                     self.level = min(self.level + 1, len(os.listdir('data//maps')) - 1)
@@ -221,6 +225,10 @@ class Test:
                 kill = enemy.update(self.tilemap,(0,0))
                 enemy.render(self.display, offset = render_scroll)
 
+            for enemy in self.bosses.copy():
+                kill = enemy.update(self.tilemap,(0,0))
+                enemy.render(self.display, offset = render_scroll)
+
             # cập nhật và hiển thị nhân vật
             if not self.dead:
                 self.player.update(self.tilemap, (self.movement[1] - self.movement[0], 0))
@@ -259,7 +267,7 @@ class Test:
                     self.skills.remove(skill)
                 elif skill.time_checker():
                     self.skills.remove(skill)
-                elif skill.enemy_class_checker(skill, self.enemies, self.spec_enemies, self.player.skill_dmg):
+                elif skill.enemy_class_checker(skill, self.enemies, self.spec_enemies, self.bosses, self.player.skill_dmg):
                     for i in range(30):
                         angle = random.random() * math.pi * 2
                         speed = random.random() * 5
@@ -330,12 +338,12 @@ class Test:
             self.screen.blit(pygame.transform.scale(self.display_2, self.screen.get_size()), screenshake_offset)
             
             #hiển thị số mục tiêu còn lại
-            self.enemies_count = self.font.render(": "+str(len(self.enemies + self.spec_enemies)), True, self.green)
+            self.enemies_count = self.font.render(": "+str(len(self.enemies + self.spec_enemies + self.bosses)), True, self.green)
             self.screen.blit(self.enemy_img,(515,20))
             self.screen.blit(self.enemies_count,(555,20))
             
             #hiển thị máu người chơi
-            self.health_player_count = self.font.render(": "+str(self.player.health), True, self.green)
+            self.health_player_count = self.font.render(": "+str(self.player.health)+"/150", True, self.green)
             self.screen.blit(self.player_img,(0,20))
             self.screen.blit(self.health_player_count,(50,20))
 
