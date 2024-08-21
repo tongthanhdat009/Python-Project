@@ -143,7 +143,6 @@ class Player(PhysicsEntity):
             self.cooldown_skill -= 5
         if self.cooldown_skill < 0:
             self.cooldown_skill = 0  
-        print (self.cooldown_skill)
     def render(self, surf,offset=(0,0)):
         if abs(self.dashing) <= 50:
             super().render(surf,offset=offset)
@@ -440,7 +439,7 @@ class Spec_Enemy(PhysicsEntity):
 
 class Boss(PhysicsEntity):
     def __init__(self, game, pos, size, health=50):
-        super().__init__(game, 'spec_enemy', pos, size)
+        super().__init__(game, 'boss', pos, size)
         self.walking = 0 #di chuyển
         self.health = health  #máu
         

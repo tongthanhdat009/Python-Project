@@ -11,6 +11,7 @@ from script.utils import load_image, load_images, animation
 from script.tilemap import Tilemap
 from script.spaceships import spaceships
 from script.particles import particle
+from script.button import Button
 
 class Test:
     def __init__(self):
@@ -45,9 +46,10 @@ class Test:
             'power_station3':load_images('tiles//power_station//pw_plat_3'),
             'power_station4':load_images('tiles//power_station//pw_plat_4'),
             'power_station5':load_images('tiles//power_station//pw_plat_5'),
-            'player': load_image('entities//player.png'),
             'background': load_image('background.png'),
             'spaceships': load_images('spaceships'),
+
+            'player': load_image('entities//player.png'),
             'player//idle': animation(load_images('entities//player//idle'), img_dur=6),
             'player//run': animation(load_images('entities//player//run'), img_dur=7),
             'player//jump': animation(load_images('entities//player//jump')),
@@ -60,10 +62,19 @@ class Test:
             'enemy//run': animation(load_images('entities//enemy//run'), img_dur= 7),
             'spec_enemy//idle': animation(load_images('entities//spec_enemy//idle'), img_dur= 6),
             'spec_enemy//run': animation(load_images('entities//spec_enemy//run'), img_dur= 7),
+            'boss//idle': animation(load_images('entities//boss//idle'), img_dur= 6),
+            'boss//run': animation(load_images('entities//boss//run'), img_dur= 7),
+
             'gun':load_image('gun.png'),
             'projectile':load_image('projectile.png'),
             'skill': load_image('skill.png'),
-            'menu':load_image('menu//bg_menu.jpg')
+            'menu':load_image('menu//bg_menu.jpg'),
+
+            'menu//EXIT_1': load_image('menu//EXIT_1.png'),
+            'menu//EXIT_2': load_image('menu//EXIT_2.png'),
+            'menu//START_1': load_image('menu//START_1.png'),
+            'menu//START_2': load_image('menu//START_2.png'),
+            'menu//TITLE_1': load_image('menu//TITLE.png'),
         }
         
         #âm thanh game
@@ -139,6 +150,9 @@ class Test:
         self.skill_img = pygame.transform.scale(load_image('skill.png'),(25,25))
         self.skill_img_cd = pygame.transform.scale(load_image('skill_cd.png'),(25,25))
 
+        #hiển thị thông báo hết game:
+        self.endGameText = self.font.render("Done!", True, self.green)
+
     def load_level(self,map_id):
         self.tilemap.load('data//maps//' + str(map_id) +'.json')
 
@@ -166,6 +180,13 @@ class Test:
             elif spawner['variant'] == 3:
                 self.bosses.append(Boss(self,spawner['pos'],(8,15)))
 
+    def endGame(self):
+        enemy_remaining = len(self.bosses + self.spec_enemies + self.enemies)
+        if self.level == (len(os.listdir('data//maps'))-1) and enemy_remaining == 0:
+            print("hello")
+            self.screen.fill('black')
+            self.screen.blit(self.endGameText, (70,250))
+  
     def run(self):
         run = True
         
@@ -176,6 +197,7 @@ class Test:
         # self.sfx['ambience'].play(-1)
 
         while run:
+
             self.display.fill((0,0,0,0))
             self.display_2.blit(self.assets['background'], (0, 0))
 
@@ -187,6 +209,7 @@ class Test:
                     self.level = min(self.level + 1, len(os.listdir('data//maps')) - 1)
                     self.load_level(self.level)
                     self.transition = -50  # Reset transition after loading the new level
+
             if self.transition < 0:
                 self.transition += 1
 
@@ -310,6 +333,9 @@ class Test:
                         self.player.dash()
                     if event.key == pygame.K_SPACE: 
                         self.player.skill()
+                    if event.key == pygame.K_ESCAPE:
+                        pygame.quit()
+                        sys.exit()
 
                 if event.type == pygame.KEYUP:
                     # if event.key == pygame.K_UP or event.key == pygame.K_w:
@@ -353,20 +379,55 @@ class Test:
             else:
                 self.screen.blit(self.skill_img,(5,70))
 
+            #hiển thị level hiện tại:
+            self.level_count = self.font.render("level: "+str(self.level),True,self.green)
+            self.screen.blit(self.level_count,(30,450))
+
             pygame.display.update()
             self.clock.tick(60)
 
     def menu(self):
+        start_img = self.assets['menu//START_1']
+        start_button = Button(100,200,start_img, 0.9)
         while True:
+            self.screen.fill((202,228,241))
+            if start_button.draw(self.screen):
+                self.run()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     return
-            self.screen.blit(pygame.transform.scale(self.main_menu, self.screen.get_size()), (0, 0))
+            # self.screen.blit(pygame.transform.scale(self.main_menu, self.screen.get_size()), (0, 0))
             pygame.display.update()
             self.clock.tick(60)
             
+class Button():
+    def __init__(self, x, y, image, scale):
+        width = image.get_width()
+        height = image.get_height()
+        self.image = pygame.transform.scale(image, (int(width*scale), int(height*scale)))
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (x,y)
+        self.clicked = False
 
+    def draw(self, screen):
+        action = False
+        #lấy vị trí trỏ chuột
+        pos = pygame.mouse.get_pos()
+
+        #kiểm tra chuột có trong vùng của nút không:
+        if self.rect.collidepoint(pos):
+            if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
+                print("con chuot")
+                self.clicked = True
+                action = True
+            if pygame.mouse.get_pressed()[0] == 0 and self.clicked == True:
+                self.clicked = False
+
+        #vẽ nút lên menu
+        screen.blit(self.image, (self.rect.x, self.rect.y))
+        return action
+    
 # Run the game
 if __name__ == "__main__":
-    Test().run()
+    Test().menu()
