@@ -1,3 +1,4 @@
+import json
 import math
 import os
 import random
@@ -23,6 +24,8 @@ class Test:
         self.display_2 = pygame.Surface((320,240))
         self.main_menu = pygame.Surface((320,240))
         
+        self.user_path = 'data//user.json'
+
         self.clock = pygame.time.Clock()
 
         self.movement = [False, False, False, False]
@@ -68,13 +71,28 @@ class Test:
             'gun':load_image('gun.png'),
             'projectile':load_image('projectile.png'),
             'skill': load_image('skill.png'),
-            'menu':load_image('menu//bg_menu.jpg'),
 
-            'menu//EXIT_1': load_image('menu//EXIT_1.png'),
-            'menu//EXIT_2': load_image('menu//EXIT_2.png'),
-            'menu//START_1': load_image('menu//START_1.png'),
-            'menu//START_2': load_image('menu//START_2.png'),
-            'menu//TITLE_1': load_image('menu//TITLE.png'),
+            'menu//pause//EXIT_1': load_image('menu//pause//EXIT_1.png'),
+            'menu//pause//EXIT_2': load_image('menu//pause//EXIT_2.png'),
+            'menu//pause//RESUME_1': load_image('menu//pause//RESUME_1.png'),
+            'menu//pause//RESUME_2': load_image('menu//pause//RESUME_2.png'),
+            'menu//pause//MENU_1': load_image('menu//pause//MENU_1.png'),
+            'menu//pause//MENU_2': load_image('menu//pause//MENU_2.png'),
+
+            'menu//main//EXIT_1': load_image('menu//main//EXIT_1.png'),
+            'menu//main//EXIT_2': load_image('menu//main//EXIT_2.png'),
+            'menu//main//START_1': load_image('menu//main//START_1.png'),
+            'menu//main//START_2': load_image('menu//main//START_2.png'),
+            'menu//main//TITLE_1': load_image('menu//main//TITLE_1.png'),
+            'menu//main//TITLE_2': load_image('menu//main//TITLE_2.png'),
+            'menu//main//TITLE_3': load_image('menu//main//TITLE_3.png'),
+            'menu//main//TUTORIAL_1': load_image('menu//main//TUTORIAL_1.png'),
+            'menu//main//TUTORIAL_2': load_image('menu//main//TUTORIAL_2.png'),
+            'menu//main//CONTINUE_1': load_image('menu//main//CONTINUE_1.png'),
+            'menu//main//CONTINUE_2': load_image('menu//main//CONTINUE_2.png'),
+            'menu//main//background': load_images('menu//background'),
+            'menu//main//TUTOR_TITLE': load_image('menu//main//TUTOR_TITLE.png'),
+            'menu//main//TUTOR': load_image('menu//main//TUTOR.png'),
         }
         
         #âm thanh game
@@ -85,8 +103,9 @@ class Test:
             'shoot': pygame.mixer.Sound('data//sfx//shoot.wav'),
             'ambience': pygame.mixer.Sound('data//sfx//ambience.wav'),
             'landing': pygame.mixer.Sound('data//sfx//landing.mp3'),
-            'domain': pygame.mixer.Sound('data//sfx//domain.mp3'),
             'ouch': pygame.mixer.Sound('data//sfx//ouch.mp3'),
+            'start': pygame.mixer.Sound('data//sfx//start.mp3'),
+            'click': pygame.mixer.Sound('data//sfx//click.mp3'),
         }
 
         self.sfx['ambience'].set_volume(0.2)
@@ -95,8 +114,10 @@ class Test:
         self.sfx['dash'].set_volume(0.3)
         self.sfx['jump'].set_volume(0.5)
         self.sfx['landing'].set_volume(0.4)
-        self.sfx['domain'].set_volume(0.8)
         self.sfx['ouch'].set_volume(0.5)
+        self.sfx['start'].set_volume(1.2)
+        self.sfx['click'].set_volume(1.2)
+        
 
         # khởi tạo đối tượng:
         #mây
@@ -119,9 +140,13 @@ class Test:
 
         self.sparks = [] # hiệu ứng tia lửa
 
-        self.level = 0 #biến lưu màn chơi
+        # Đọc nội dung file JSON hiện tại
+        with open(self.user_path, 'r') as file:
+            data = json.load(file)
 
-        self.load_level(0)
+        self.level = data['user']['level'] #biến lưu màn chơi
+
+        self.load_level(self.level)
 
         self.dead = 0 #kiểm tra người chơi đã chết chưa
 
@@ -130,18 +155,17 @@ class Test:
         self.transition = -50
 
         # hiển số địch còn lại
-        self.white = (255, 255, 255)
-        self.green = (0, 255, 0)
         self.font = pygame.font.Font('data//font//CyberpunkCraftpixPixel.otf', 32)
+        self.menu_font = pygame.font.Font('data//font//CyberpunkCraftpixPixel.otf', 19)
         
         #đếm số npc còn lại
-        self.enemies_count = self.font.render(": "+str(len(self.enemies)), True, self.green)
+        self.enemies_count = self.font.render(": "+str(len(self.enemies)), True,(0, 255, 0))
         self.enemies_countRect = self.enemies_count.get_rect()
         self.enemies_countRect = (640//2,480//2)
         self.enemy_img = pygame.transform.scale(load_image('entities//enemy//idle//0.png'),(35,35))
 
         # hiển thị máu người chơi
-        self.health_player_count = self.font.render(": "+str(self.player.health), True, self.green)
+        self.health_player_count = self.font.render(": "+str(self.player.health), True,(0, 255, 0))
         self.health_player_countRect = self.enemies_count.get_rect()
         self.health_player_countRect = (640//2,480//2)
         self.player_img = pygame.transform.scale(load_image('entities//player//idle//0.png'),(35,35))
@@ -151,7 +175,7 @@ class Test:
         self.skill_img_cd = pygame.transform.scale(load_image('skill_cd.png'),(25,25))
 
         #hiển thị thông báo hết game:
-        self.endGameText = self.font.render("Done!", True, self.green)
+        self.endGameText = self.font.render("Done!", True,(0, 255, 0))
 
     def load_level(self,map_id):
         self.tilemap.load('data//maps//' + str(map_id) +'.json')
@@ -159,13 +183,20 @@ class Test:
         self.projectiles = []
         self.skills = []
 
-        # tạo hoạt ảnh lá rơi
-        self.leaf_spawners = []
-        self.tilemap.extract([('large_decor', 2)], keep=True)
-        
-        for tree in self.tilemap.extract([('large_decor', 2)], keep=True):
-            self.leaf_spawners.append(pygame.Rect(4 + tree['pos'][0], 4 + tree['pos'][1], 23, 13)) # 4 4 rơi từ trái trên xuống dưới trái phải
-        
+        # # Đọc nội dung file JSON hiện tại
+        # with open(self.user_path, 'r') as file:
+        #     data = json.load(file)
+
+        # # Cập nhật giá trị level
+        # data['user']['level'] = self.level  # Thay đổi giá trị level thành 10 (hoặc bất kỳ giá trị nào bạn muốn)
+
+        # # Ghi lại dữ liệu đã cập nhật vào file JSON
+        # with open(self.user_path, 'w') as file:
+        #     json.dump(data, file, indent=4)
+
+        # print("Level đã được cập nhật thành công!")
+        # self.load_level(self.level)
+
         self.enemies = []
         self.spec_enemies = []
         self.bosses = []
@@ -189,12 +220,6 @@ class Test:
   
     def run(self):
         run = True
-        
-        pygame.mixer.music.load('data//music.mp3')
-        pygame.mixer.music.set_volume(0.3)
-        pygame.mixer.music.play(-1)
-
-        # self.sfx['ambience'].play(-1)
 
         while run:
 
@@ -207,8 +232,22 @@ class Test:
                 self.transition += 1
                 if self.transition > 30:
                     self.level = min(self.level + 1, len(os.listdir('data//maps')) - 1)
+
+                    # Đọc nội dung file JSON hiện tại
+                    with open(self.user_path, 'r') as file:
+                        data = json.load(file)
+
+                    # Cập nhật giá trị level
+                    data['user']['level'] = self.level  # Thay đổi giá trị level thành 10 (hoặc bất kỳ giá trị nào bạn muốn)
+
+                    # Ghi lại dữ liệu đã cập nhật vào file JSON
+                    with open(self.user_path, 'w') as file:
+                        json.dump(data, file, indent=4)
+
+                    print("Level đã được cập nhật thành công!")
                     self.load_level(self.level)
-                    self.transition = -50  # Reset transition after loading the new level
+                    
+                    self.transition = -50  # tạo lại hiệu ứng chuyển cảnh khi qua màn
 
             if self.transition < 0:
                 self.transition += 1
@@ -226,11 +265,11 @@ class Test:
             self.scroll[1] += (self.player.rect().centery - self.display.get_width() / 2 - self.scroll[1]) / 30
             render_scroll = (int(self.scroll[0]), int(self.scroll[1]))
 
-            # tạo lá
-            for rect in self.leaf_spawners:
-                if random.random() * 49999 < rect.width * rect.height:
-                    pos = (rect.x + random.random() * rect.width, rect.y + random.random() * rect.height)
-                    self.particles.append(particle(self, 'leaf', pos, velocity=[-0.1, 0.3], frame=random.randint(0, 20)))
+            # # tạo lá
+            # for rect in self.leaf_spawners:
+            #     if random.random() * 49999 < rect.width * rect.height:
+            #         pos = (rect.x + random.random() * rect.width, rect.y + random.random() * rect.height)
+            #         self.particles.append(particle(self, 'leaf', pos, velocity=[-0.1, 0.3], frame=random.randint(0, 20)))
 
             # tải vật thể trong map
             self.tilemap.render(self.display, offset=render_scroll)
@@ -315,8 +354,8 @@ class Test:
             for part in self.particles.copy():
                 kill = part.update()
                 part.render(self.display, offset=render_scroll)
-                if part.type == 'leaf':
-                    part.pos[0] += math.sin(part.animation.frame * 0.035) * 0.3 #giảm tốc độ hết 1 vòng lặp
+                # if part.type == 'leaf':
+                #     part.pos[0] += math.sin(part.animation.frame * 0.035) * 0.3 #giảm tốc độ hết 1 vòng lặp
                 if kill:
                     self.particles.remove(part)
 
@@ -334,8 +373,7 @@ class Test:
                     if event.key == pygame.K_SPACE: 
                         self.player.skill()
                     if event.key == pygame.K_ESCAPE:
-                        pygame.quit()
-                        sys.exit()
+                        self.pause()
 
                 if event.type == pygame.KEYUP:
                     # if event.key == pygame.K_UP or event.key == pygame.K_w:
@@ -364,69 +402,176 @@ class Test:
             self.screen.blit(pygame.transform.scale(self.display_2, self.screen.get_size()), screenshake_offset)
             
             #hiển thị số mục tiêu còn lại
-            self.enemies_count = self.font.render(": "+str(len(self.enemies + self.spec_enemies + self.bosses)), True, self.green)
+            self.enemies_count = self.font.render(": "+str(len(self.enemies + self.spec_enemies + self.bosses)), True,(0, 255, 0))
             self.screen.blit(self.enemy_img,(515,20))
             self.screen.blit(self.enemies_count,(555,20))
             
             #hiển thị máu người chơi
-            self.health_player_count = self.font.render(": "+str(self.player.health)+"/150", True, self.green)
+            self.health_player_count = self.font.render(": "+str(self.player.health)+"/150", True,(0, 255, 0))
             self.screen.blit(self.player_img,(0,20))
             self.screen.blit(self.health_player_count,(50,20))
 
             #hiển thị hồi chiêu người chơi
             if(self.player.cooldown_skill > 0):
-                self.screen.blit(self.skill_img_cd,(5,70))
+                self.screen.blit(self.skill_img_cd, (5,70))
+                self.space_text = self.font.render(": Space", True,(0, 255, 0))
+                self.screen.blit(self.space_text,(35,70))
             else:
-                self.screen.blit(self.skill_img,(5,70))
+                self.screen.blit(self.skill_img, (5,70))
+                self.space_text = self.font.render(": Space", True,(0, 255, 0))
+                self.screen.blit(self.space_text,(35,70))
 
             #hiển thị level hiện tại:
-            self.level_count = self.font.render("level: "+str(self.level),True,self.green)
+            self.level_count = self.font.render("level: "+str(self.level),True, (0, 255, 0))
+            
+            #hiển thị FPS:
+            self.fps_count = self.font.render(str(self.clock.get_fps()),True, (0, 255, 0))
+
             self.screen.blit(self.level_count,(30,450))
+            self.screen.blit(self.fps_count,(600,440))
 
             pygame.display.update()
             self.clock.tick(60)
 
     def menu(self):
-        start_img = self.assets['menu//START_1']
-        start_button = Button(100,200,start_img, 0.9)
+
+        text_color = [(255,16,0), (224, 199, 69), (181, 255, 116)]
+        slogan_text = self.menu_font.render("Hunt your foes, dash to victory!", True, (255,16,0))
+        
+        start_img = self.assets['menu//main//START_1']
+        start_img_hover = self.assets['menu//main//START_2']
+        start_button = Button(265,225,start_img, 0.4, start_img_hover)
+
+        continue_img = self.assets['menu//main//CONTINUE_1']
+        continue_img_hover = self.assets['menu//main//CONTINUE_2']
+        continue_button = Button(425,225,continue_img, 0.4, continue_img_hover)
+
+
+        tutor_img = self.assets['menu//main//TUTORIAL_1']
+        tutor_img_hover = self.assets['menu//main//TUTORIAL_2']
+        turtor_button = Button(263,300,tutor_img, 0.4, tutor_img_hover)
+        
+        exit_img = self.assets['menu//main//EXIT_1']
+        exit_img_hover = self.assets['menu//main//EXIT_2']
+        exit_button = Button(265,375,exit_img, 0.4,exit_img_hover)
+
+        # Danh sách ảnh sẽ đổi trong thời gian hiện hành của menu
+        title_images = [self.assets['menu//main//TITLE_1'], self.assets['menu//main//TITLE_2'], self.assets['menu//main//TITLE_3']]
+        current_title_index = 0
+        title_img = title_images[current_title_index]
+        
+        background_list = self.assets['menu//main//background'].copy()
+        current_background_index = 0
+        background = pygame.transform.scale(background_list[current_background_index], (640,480))
+
+        # Đặt bộ đếm thời gian giữa mỗi lần hiển thị thay đổi
+        title_switch_time = 1000  # mỗi 1 giây đổi màu title
+        last_switch_time = pygame.time.get_ticks()
+        
+        background_switch_time = 3000  # mỗi 5 giây sẽ đổi 1 background
+        bg_last_switch_time = pygame.time.get_ticks()
+
+        pygame.mixer.music.load('data//music.mp3')
+        pygame.mixer.music.set_volume(0.6)
+        pygame.mixer.music.play(-1)
+        
+        # Đọc nội dung file JSON hiện tại
+        with open(self.user_path, 'r') as file:
+            data = json.load(file)
+
         while True:
-            self.screen.fill((202,228,241))
+            
+            # kiểm tra thời gian để thay đổi ảnh
+            current_time = pygame.time.get_ticks()
+            if current_time - last_switch_time > title_switch_time:
+                current_title_index = (current_title_index + 1) % len(title_images)
+                title_img = title_images[current_title_index]
+                slogan_text = self.menu_font.render("Hunt your foes, dash to victory!", True, text_color[current_title_index])
+                last_switch_time = current_time
+
+            if current_time - bg_last_switch_time > background_switch_time:
+                current_background_index = (current_background_index + 1) % len(background_list) #tăng chỉ số của nền hiện tại
+                background = pygame.transform.scale(background_list[current_background_index], (640,480))
+                bg_last_switch_time = current_time #cập nhật thời gian chuyển
+
+
+            # vẽ ảnh + chữ lên menu
+            self.screen.blit(background, (0,0))
+            self.screen.blit(title_img, (-33, -1))
+            self.screen.blit(slogan_text,(135,175))
+
+            #nút
             if start_button.draw(self.screen):
                 self.run()
+            if exit_button.draw(self.screen):
+                pygame.quit()
+                sys.exit()
+            if turtor_button.draw(self.screen):
+                self.tutorial()
+            if data['user']['level'] > 0:
+                if continue_button.draw(self.screen):
+                    self.run()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     return
-            # self.screen.blit(pygame.transform.scale(self.main_menu, self.screen.get_size()), (0, 0))
             pygame.display.update()
             self.clock.tick(60)
+
+    def tutorial(self):
+        
+        running = True
+        pause_title = self.menu_font.render("Paused!", True, (255,16,0))
+        
+        while running:
+            # Xử lý sự kiện
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    return
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:  # Nhấn ESC để thoát tutorial
+                        running = False
+            # Vẽ nội dung tutorial
+            tutor_content = pygame.transform.scale(self.assets['menu//main//TUTOR'],(630,480))
+            self.screen.blit(tutor_content,(0,0))
             
-class Button():
-    def __init__(self, x, y, image, scale):
-        width = image.get_width()
-        height = image.get_height()
-        self.image = pygame.transform.scale(image, (int(width*scale), int(height*scale)))
-        self.rect = self.image.get_rect()
-        self.rect.topleft = (x,y)
-        self.clicked = False
+            # Cập nhật màn hình
+            pygame.display.update()
+            self.clock.tick(60)
 
-    def draw(self, screen):
-        action = False
-        #lấy vị trí trỏ chuột
-        pos = pygame.mouse.get_pos()
+    def pause(self):
+        running = True
+        resume_img = self.assets['menu//pause//RESUME_1']
+        resume_img_hover = self.assets['menu//pause//RESUME_2']
+        resume_button = Button(0,200,resume_img, 0.4, resume_img_hover)
 
-        #kiểm tra chuột có trong vùng của nút không:
-        if self.rect.collidepoint(pos):
-            if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
-                print("con chuot")
-                self.clicked = True
-                action = True
-            if pygame.mouse.get_pressed()[0] == 0 and self.clicked == True:
-                self.clicked = False
+        menu_img = self.assets['menu//pause//MENU_1']
+        menu_img_hover = self.assets['menu//pause//MENU_2']
+        menu_button = Button(0,275,menu_img, 0.4, menu_img_hover)
 
-        #vẽ nút lên menu
-        screen.blit(self.image, (self.rect.x, self.rect.y))
-        return action
+        exit_img = self.assets['menu//pause//EXIT_1']
+        exit_img_hover = self.assets['menu//pause//EXIT_2']
+        exit_button = Button(0,350,exit_img, 0.4, exit_img_hover)
+
+        while running:
+            if resume_button.draw(self.screen):
+                self.run()
+            if menu_button.draw(self.screen):
+                self.menu()
+            if exit_button.draw(self.screen):
+                pygame.quit()
+                sys.exit()
+            
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    return
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        running = False
+            pygame.display.update()
+            self.clock.tick(60)
     
 # Run the game
 if __name__ == "__main__":

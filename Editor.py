@@ -1,5 +1,7 @@
 import sys
 import pygame
+import json
+
 
 
 from script.utils import load_images, animation
@@ -17,6 +19,10 @@ class Editor:
 
         self.clock = pygame.time.Clock()
         
+        self.path = 'data//maps//0.json'
+        self.user_path = 'data//user.json'
+        
+
         #hình ảnh
         self.assets = {
             'decor': load_images('tiles//decor'),
@@ -47,7 +53,7 @@ class Editor:
         self.tilemap = Tilemap(self,tile_size=16)
         
         try:
-            self.tilemap.load('data//maps//0.json')
+            self.tilemap.load(self.path)
         except FileNotFoundError:
             pass
 
@@ -72,6 +78,7 @@ class Editor:
 
     def run(self):#chạy game
         run = True
+        
         while run:
             self.display.fill((0,0,0))
 
@@ -134,7 +141,7 @@ class Editor:
                     if event.key == pygame.K_g: # chỉnh trên đường viền 
                         self.ongrid = False
                     if event.key == pygame.K_o: #lưu map đang tạo
-                        self.tilemap.save('data//maps//0.json')
+                        self.tilemap.save(self.path)
                     if event.key == pygame.K_LSHIFT:
                         self.shift = True
 

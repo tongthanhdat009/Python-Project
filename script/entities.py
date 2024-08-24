@@ -438,7 +438,7 @@ class Spec_Enemy(PhysicsEntity):
         surf.blit(self.game.assets['gun'], (self.rect().centerx + 8 - offset[0], self.rect().centery - offset[1]))
 
 class Boss(PhysicsEntity):
-    def __init__(self, game, pos, size, health=50):
+    def __init__(self, game, pos, size, health=2000):
         super().__init__(game, 'boss', pos, size)
         self.walking = 0 #di chuyển
         self.health = health  #máu
@@ -471,23 +471,23 @@ class Boss(PhysicsEntity):
                 dis = (self.game.player.pos[0] - self.pos[0], self.game.player.pos[1] - self.pos[1])
                 if (abs(dis[1]) < 500):
                     self.game.sfx['shoot'].play()
-                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx + 7, self.rect().centery - 28,-2,0,50))
-                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx, self.rect().centery - 21,-2,0,50))
-                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx - 7, self.rect().centery - 14,-2,0,50))
-                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx - 7, self.rect().centery - 7,-2,0,50))
-                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx - 7, self.rect().centery,-2,0,50))
+                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx + 7, self.rect().centery - 28,-2,0,30))
+                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx, self.rect().centery - 21,-2,0,30))
+                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx - 7, self.rect().centery - 14,-2,0,30))
+                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx - 7, self.rect().centery - 7,-2,0,30))
+                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx - 7, self.rect().centery,-2,0,30))
                     for i in range(4):
                         self.game.sparks.append(Spark((self.game.projectiles[-1].x,self.game.projectiles[-1].y), random.random() - 0.5 + math.pi, 2 + random.random(),(240, 72, 50)))
                     self.game.sfx['shoot'].play()
-                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx -7, self.rect().centery - 28,2,0,50))
-                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx, self.rect().centery -21 , 2, 0, 50))
-                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx + 7, self.rect().centery -14 , 2, 0, 50))
-                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx + 7, self.rect().centery -7 , 2, 0, 50))
-                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx + 7, self.rect().centery, 2, 0, 50))
+                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx -7, self.rect().centery - 28,2,0,30))
+                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx, self.rect().centery -21 , 2, 0, 30))
+                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx + 7, self.rect().centery -14 , 2, 0, 30))
+                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx + 7, self.rect().centery -7 , 2, 0, 30))
+                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx + 7, self.rect().centery, 2, 0, 30))
                     for i in range(4):
                         self.game.sparks.append(Spark((self.game.projectiles[-1].x,self.game.projectiles[-1].y), random.random() - 0.5, 2 + random.random(),(240, 72, 50)))
         elif random.random() < 0.1:
-            self.walking = random.randint(30, 40)
+            self.walking = random.randint(30, 100)
         
         super().update(tilemap, movement=movement)
         
@@ -531,10 +531,10 @@ class Boss(PhysicsEntity):
     def render(self, surf, offset=(0, 0)):
         super().render(surf, offset=offset)
         #render 4 súng cho spec_enemy
-        surf.blit(pygame.transform.flip(self.game.assets['gun'], True, False), (self.rect().centerx - 8 - self.game.assets['gun'].get_width() - offset[0], self.rect().centery - offset[1]))
-        surf.blit(self.game.assets['gun'], (self.rect().centerx + 8 - offset[0], self.rect().centery - 8 - offset[1]))
-        surf.blit(pygame.transform.flip(self.game.assets['gun'], True, False), (self.rect().centerx - 8 - self.game.assets['gun'].get_width() - offset[0], self.rect().centery -8 - offset[1]))
-        surf.blit(self.game.assets['gun'], (self.rect().centerx + 8 - offset[0], self.rect().centery - offset[1]))
+        # surf.blit(pygame.transform.flip(self.game.assets['gun'], True, False), (self.rect().centerx - 8 - self.game.assets['gun'].get_width() - offset[0], self.rect().centery - offset[1]))
+        # surf.blit(self.game.assets['gun'], (self.rect().centerx + 8 - offset[0], self.rect().centery - 8 - offset[1]))
+        # surf.blit(pygame.transform.flip(self.game.assets['gun'], True, False), (self.rect().centerx - 8 - self.game.assets['gun'].get_width() - offset[0], self.rect().centery -8 - offset[1]))
+        # surf.blit(self.game.assets['gun'], (self.rect().centerx + 8 - offset[0], self.rect().centery - offset[1]))
 
 
     
