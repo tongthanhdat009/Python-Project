@@ -19,7 +19,7 @@ class Editor:
 
         self.clock = pygame.time.Clock()
         
-        self.path = 'data//maps//0.json'
+        self.path = 'data//maps//3.json'
         self.user_path = 'data//user.json'
         
 
@@ -166,7 +166,7 @@ class Editor:
                     if event.button == 1:
                         self.clicking = True
                         if not self.ongrid:
-                            self.tilemap.offgrid_tile.append({'type': self.tile_list[self.tile_group], 'variant': self.tile_variant, 'pos':(mpos[0]+self.scroll[0],mpos[1]+self.scroll[1])})
+                            self.tilemap.offgrid_tiles.append({'type': self.tile_list[self.tile_group], 'variant': self.tile_variant, 'pos':(mpos[0]+self.scroll[0],mpos[1]+self.scroll[1])})
                     if event.button == 3:
                         self.right_clicking = True
                     #chuyển loại vật cản bằng cách bấm shift

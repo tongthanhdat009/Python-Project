@@ -79,7 +79,7 @@ class PhysicsEntity:
         surf.blit(pygame.transform.flip(self.animation.img(),self.flip,False), (self.pos[0] - offset[0] + self.anim_offset[0], self.pos[1]-offset[1]+self.anim_offset[1]))
 
 class Player(PhysicsEntity):
-    def __init__(self, game, pos, size, health=150):
+    def __init__(self, game, pos, size, health=300):
         super().__init__(game, 'player', pos, size)
         self.air_time = 5 # thời gian trên không
         self.jump_count = 2 #số lần nhảy
@@ -219,34 +219,35 @@ class Player(PhysicsEntity):
                 pygame.draw.circle(transition_surf, (255, 255, 255), (self.game.display.get_width() // 2, self.game.display.get_height() // 2), (30 - abs(self.game.transition)) * 8)
                 transition_surf.set_colorkey((255, 255, 255))
                 self.game.display.blit(transition_surf, (0, 0))
-            self.game.player.health = 150
+            self.game.player.health = 300
             self.cooldown_skill = 0
         else:
             self.game.dead = 0
 
     #kiểm soát lượng máu tối đa
     def health_check(self):
-        if self.health > 150:
-            self.health = 150
+        if self.health > 300:
+            self.health = 300
     
     #kỹ năng người chơi
     def skill(self):
         if self.cooldown_skill == 0:
             if self.flip:
-                self.game.skills.append(Bullet(self.game,self.rect().centerx, self.rect().centery,-2,0,50))
+                self.game.skills.append(Bullet(self.game,self.rect().centerx, self.rect().centery,-5,0,50))
                 for i in range(4):
                     self.game.sparks.append(Spark((self.game.skills[-1].x,self.game.skills[-1].y), random.random() - 0.5 + math.pi, 2 + random.random(),(187, 255, 0)))
                 self.cooldown_skill = 500
 
             elif not self.flip:
-                self.game.skills.append(Bullet(self.game,self.rect().centerx, self.rect().centery, 2,0,50))
+                self.game.skills.append(Bullet(self.game,self.rect().centerx, self.rect().centery, 5,0,50))
                 for i in range(4):
                     self.game.sparks.append(Spark((self.game.skills[-1].x,self.game.skills[-1].y), random.random() - 0.5, 2 + random.random(),(187, 255, 0)))
                 self.cooldown_skill = 500
+            self.game.sfx['skill'].play()
 
 #kế thừa
 class Enemy(PhysicsEntity):
-    def __init__(self, game, pos, size, health=150, dmg = 150):
+    def __init__(self, game, pos, size, health=150, dmg = 15):
         super().__init__(game, 'enemy', pos, size)
         
         self.dmg = dmg
@@ -255,6 +256,7 @@ class Enemy(PhysicsEntity):
         
     #giảm máu npc nếu bị player dash trúng
     def take_damage(self, amount=20): 
+        self.game.sfx['hit'].play()
         self.health -= amount
         if self.health <= 0:
             self.die()
@@ -339,13 +341,14 @@ class Enemy(PhysicsEntity):
             surf.blit(self.game.assets['gun'], (self.rect().centerx + 8 - offset[0], self.rect().centery - offset[1]))
 
 class Spec_Enemy(PhysicsEntity):
-    def __init__(self, game, pos, size, health=175, healing=100, dmg = 50):
+    def __init__(self, game, pos, size, health=125, healing=150, dmg = 15):
         super().__init__(game, 'spec_enemy', pos, size)
         self.walking = 0 #di chuyển
         self.health = health  #máu
         self.healing = healing #lượng hồi máu cho người chơi sau khi bị hạ gục
         self.dmg = dmg #sát thương có thể gây ra cho người chơi
     def take_damage(self, amount=20): #giảm máu npc nếu bị player dash trúng
+        self.game.sfx['hit'].play()
         self.health -= amount
         if self.health <= 0:
             self.die()
@@ -376,7 +379,7 @@ class Spec_Enemy(PhysicsEntity):
             self.walking = max(0, self.walking - 1)
             if not self.walking: #cho npc đứng yên để bắn
                 dis = (self.game.player.pos[0] - self.pos[0], self.game.player.pos[1] - self.pos[1])
-                if (abs(dis[1]) < 50):
+                if (abs(dis[1]) < 75):
                     self.game.sfx['shoot'].play()
                     self.game.projectiles.append(Bullet(self.game,self.rect().centerx - 7, self.rect().centery - 7,-2,0, self.dmg))
                     self.game.projectiles.append(Bullet(self.game,self.rect().centerx - 7, self.rect().centery,-2,0,50))
@@ -426,9 +429,6 @@ class Spec_Enemy(PhysicsEntity):
                 self.game.dead = 0
             return True    
 
-    def hit(self, amount = 20):
-        self.take_damage(amount)
-
     def render(self, surf, offset=(0, 0)):
         super().render(surf, offset=offset)
         #render 4 súng cho spec_enemy
@@ -438,12 +438,14 @@ class Spec_Enemy(PhysicsEntity):
         surf.blit(self.game.assets['gun'], (self.rect().centerx + 8 - offset[0], self.rect().centery - offset[1]))
 
 class Boss(PhysicsEntity):
-    def __init__(self, game, pos, size, health=2000):
+    def __init__(self, game, pos, size, dmg = 6, health=350):
         super().__init__(game, 'boss', pos, size)
         self.walking = 0 #di chuyển
         self.health = health  #máu
-        
+        self.dmg = dmg
+
     def take_damage(self, amount=20): #giảm máu npc nếu bị player dash trúng
+        self.game.sfx['hit'].play()
         self.health -= amount
         if self.health <= 0:
             self.die()
@@ -469,21 +471,21 @@ class Boss(PhysicsEntity):
             self.walking = max(0, self.walking - 2)
             if not self.walking: #cho npc đứng yên để bắn
                 dis = (self.game.player.pos[0] - self.pos[0], self.game.player.pos[1] - self.pos[1])
-                if (abs(dis[1]) < 500):
+                if (abs(dis[1]) < 100):
                     self.game.sfx['shoot'].play()
-                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx + 7, self.rect().centery - 28,-2,0,30))
-                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx, self.rect().centery - 21,-2,0,30))
-                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx - 7, self.rect().centery - 14,-2,0,30))
-                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx - 7, self.rect().centery - 7,-2,0,30))
-                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx - 7, self.rect().centery,-2,0,30))
+                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx + 7, self.rect().centery - 28,-2,0,self.dmg))
+                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx, self.rect().centery - 21,-2,0,self.dmg))
+                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx - 7, self.rect().centery - 14,-2,0,self.dmg))
+                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx - 7, self.rect().centery - 7,-2,0,self.dmg))
+                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx - 7, self.rect().centery,-2,0,self.dmg))
                     for i in range(4):
                         self.game.sparks.append(Spark((self.game.projectiles[-1].x,self.game.projectiles[-1].y), random.random() - 0.5 + math.pi, 2 + random.random(),(240, 72, 50)))
                     self.game.sfx['shoot'].play()
-                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx -7, self.rect().centery - 28,2,0,30))
-                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx, self.rect().centery -21 , 2, 0, 30))
-                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx + 7, self.rect().centery -14 , 2, 0, 30))
-                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx + 7, self.rect().centery -7 , 2, 0, 30))
-                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx + 7, self.rect().centery, 2, 0, 30))
+                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx -7, self.rect().centery - 28,2,0,self.dmg))
+                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx, self.rect().centery -21 , 2, 0, self.dmg))
+                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx + 7, self.rect().centery -14 , 2, 0, self.dmg))
+                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx + 7, self.rect().centery -7 , 2, 0, self.dmg))
+                    self.game.projectiles.append(Bullet(self.game,self.rect().centerx + 7, self.rect().centery, 2, 0, self.dmg))
                     for i in range(4):
                         self.game.sparks.append(Spark((self.game.projectiles[-1].x,self.game.projectiles[-1].y), random.random() - 0.5, 2 + random.random(),(240, 72, 50)))
         elif random.random() < 0.1:
@@ -524,9 +526,6 @@ class Boss(PhysicsEntity):
             else:
                 self.game.dead = 0
             return True    
-
-    def hit(self, amount = 20):
-        self.take_damage(amount)
 
     def render(self, surf, offset=(0, 0)):
         super().render(surf, offset=offset)
