@@ -39,7 +39,7 @@ class Test:
         self.assets = {
             'decor': load_images('tiles//decor'),
             'grass': load_images('tiles//grass'),
-            'large_decor': load_images('tiles//large_decor'),
+            'large_decor': load_images(r'tiles/large_decor'),
             'stone': load_images('tiles//stone'),
             'industry1': load_images('tiles//industry//industry_plat_1'),
             'industry2': load_images('tiles//industry//industry_plat_2'),
@@ -410,7 +410,7 @@ class Test:
             self.screen.blit(self.enemies_count,(555,20))
             
             #hiển thị máu người chơi
-            self.health_player_count = self.font.render(": "+str(self.player.health)+"/200", True,(0, 255, 0))
+            self.health_player_count = self.font.render(": "+str(self.player.health)+"/300", True,(0, 255, 0))
             self.screen.blit(self.player_img,(0,20))
             self.screen.blit(self.health_player_count,(50,20))
 
@@ -482,7 +482,6 @@ class Test:
             data = json.load(file)
 
         while True:
-            
             # kiểm tra thời gian để thay đổi ảnh
             current_time = pygame.time.get_ticks()
             if current_time - last_switch_time > title_switch_time:
@@ -585,7 +584,7 @@ class Test:
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         running = False
-            self.screen.blit(pause_title, (35,175))
+            self.display.blit(pause_title, (35,175))
             pygame.display.update()
             self.clock.tick(60)
     
