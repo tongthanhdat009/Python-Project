@@ -163,6 +163,10 @@ class Test:
         self.load_level(self.level)
 
         self.dead = 0 #kiểm tra người chơi đã chết chưa
+        self.death_timer = 0 #bo dem thoi gian chet (frame)
+        self.flash_timer = 0 #bo dem flash khi chet
+        self.hit_freeze = 0 #so frame dung man hinh khi bi danh
+        self.hit_flash = 0 #so frame flash trang khi bi danh
 
         self.checkpoint = None #vị trí checkpoint cuối cùng
         self.active_checkpoints = set() #các checkpoint đã kích hoạt (index)
@@ -276,11 +280,24 @@ class Test:
             if self.transition < 0:
                 self.transition += 1
 
-            if self.dead == 1:
-                self.projectiles.clear()
-                self.skills.clear()
-                self.respawn_at_checkpoint()
-                self.dead = 0
+            # xu ly chet co animation
+            if self.hit_freeze > 0:
+                self.hit_freeze -= 1
+            if self.hit_flash > 0:
+                self.hit_flash -= 1
+            if self.death_timer > 0:
+                self.death_timer -= 1
+                self.flash_timer = (self.flash_timer + 1) % 6  # flash nhanh
+                if self.death_timer <= 0:
+                    self.projectiles.clear()
+                    self.skills.clear()
+                    self.respawn_at_checkpoint()
+                    self.dead = 0
+                    self.flash_timer = 0
+            elif self.dead == 1:
+                self.death_timer = 72  # ~1.2s o 60fps
+                self.flash_timer = 0
+                self.dead = 2  # dang trong qua trinh chet
 
 
             # di chuyển cam
@@ -319,7 +336,7 @@ class Test:
                 flying.render(self.display, offset = render_scroll)
 
             # cập nhật và hiển thị nhân vật
-            if not self.dead:
+            if not self.dead and self.death_timer <= 0:
                 self.player.update(self.tilemap, (self.movement[1] - self.movement[0], 0))
                 self.player.render(self.display, offset=render_scroll)
 
@@ -329,6 +346,15 @@ class Test:
                         if self.player.pos[0] >= cp[0] - 8:
                             self.active_checkpoints.add(i)
                             self.checkpoint = list(cp)
+
+            # hien thi death animation (player do flash)
+            if self.dead == 2:
+                self.player.update(self.tilemap, (self.movement[1] - self.movement[0], 0))
+                player_surf = pygame.Surface(self.player.img.get_size(), pygame.SRCALPHA)
+                if self.flash_timer < 3:
+                    player_surf.fill((255, 0, 0, 180))
+                player_surf.blit(self.player.img, (0, 0))
+                self.display.blit(player_surf, (self.player.pos[0] - render_scroll[0], self.player.pos[1] - render_scroll[1]))
 
             # hiển thị checkpoint đã kích hoạt
             for i, cp in enumerate(self.checkpoint_positions):
@@ -357,7 +383,9 @@ class Test:
                         # print(self.player.health)
                         self.projectiles.remove(projectile)
                         self.screenshake = max(16, self.screenshake)
-                        for i in range(30):
+                        self.hit_freeze = 4  # dung man hinh 4 frame
+                        self.hit_flash = 4   # flash trang 4 frame
+                        for i in range(50):
                             angle = random.random() * math.pi * 2
                             speed = random.random() * 5
                             #hiệu ứng nổ khi trúng đạn
@@ -375,7 +403,9 @@ class Test:
                 elif skill.time_checker():
                     self.skills.remove(skill)
                 elif skill.enemy_class_checker(skill, self.enemies, self.spec_enemies, self.bosses, self.flying_enemies, self.player.skill_dmg):
-                    for i in range(30):
+                    self.hit_freeze = 4
+                    self.hit_flash = 4
+                    for i in range(50):
                         angle = random.random() * math.pi * 2
                         speed = random.random() * 5
                         #hiệu ứng nổ khi trúng đạn
@@ -404,33 +434,32 @@ class Test:
                 if kill:
                     self.particles.remove(part)
 
-            # xử lý sự kiện nút
-            for event in pygame.event.get():
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_UP or event.key == pygame.K_w:
-                        self.player.jump_perform()
-                    if event.key == pygame.K_LEFT or event.key == pygame.K_a:
-                        self.movement[0] = True
-                    if event.key == pygame.K_RIGHT or event.key == pygame.K_d:
-                        self.movement[1] = True
-                    if event.key == pygame.K_x:
-                        self.player.dash()
-                    if event.key == pygame.K_SPACE: 
-                        self.player.skill()
-                    if event.key == pygame.K_ESCAPE:
-                        self.pause()
+            # xử lý sự kiện nút (bo qua khi freeze)
+            if self.hit_freeze <= 0:
+                for event in pygame.event.get():
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_UP or event.key == pygame.K_w:
+                            self.player.jump_perform()
+                        if event.key == pygame.K_LEFT or event.key == pygame.K_a:
+                            self.movement[0] = True
+                        if event.key == pygame.K_RIGHT or event.key == pygame.K_d:
+                            self.movement[1] = True
+                        if event.key == pygame.K_x:
+                            self.player.dash()
+                        if event.key == pygame.K_SPACE:
+                            self.player.skill()
+                        if event.key == pygame.K_ESCAPE:
+                            self.pause()
 
-                if event.type == pygame.KEYUP:
-                    # if event.key == pygame.K_UP or event.key == pygame.K_w:
-                    #     self.movement[2] = False
-                    if event.key == pygame.K_LEFT or event.key == pygame.K_a:
-                        self.movement[0] = False
-                    if event.key == pygame.K_RIGHT or event.key == pygame.K_d:
-                        self.movement[1] = False
+                    if event.type == pygame.KEYUP:
+                        if event.key == pygame.K_LEFT or event.key == pygame.K_a:
+                            self.movement[0] = False
+                        if event.key == pygame.K_RIGHT or event.key == pygame.K_d:
+                            self.movement[1] = False
 
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        sys.exit()
 
             #hiệu ứng chuyển màn
             if self.transition:
@@ -445,16 +474,38 @@ class Test:
             #hiệu ứng rung màn hình
             screenshake_offset = (random.random() * self.screenshake - self.screenshake / 2,random.random() * self.screenshake - self.screenshake / 2 )
             self.screen.blit(pygame.transform.scale(self.display_2, self.screen.get_size()), screenshake_offset)
-            
-            #hiển thị số mục tiêu còn lại
+
+            # white flash overlay khi bi danh
+            if self.hit_flash > 0:
+                flash_surf = pygame.Surface((640, 480), pygame.SRCALPHA)
+                alpha = int(self.hit_flash / 4 * 150)
+                flash_surf.fill((255, 255, 255, alpha))
+                self.screen.blit(flash_surf, (0, 0))
+
+            #hien thi so muc tieu con lai
             self.enemies_count = self.font.render(": "+str(self.enemies_upd()), True,(0, 255, 0))
             self.screen.blit(self.enemy_img,(515,20))
             self.screen.blit(self.enemies_count,(555,20))
-            
-            #hiển thị máu người chơi
-            self.health_player_count = self.font.render(": "+str(self.player.health)+"/300", True,(0, 255, 0))
-            self.screen.blit(self.player_img,(0,20))
-            self.screen.blit(self.health_player_count,(50,20))
+
+            # thanh mau nguoi choi (visual health bar)
+            max_health = 300
+            current_health = self.player.health
+            bar_x, bar_y = 50, 24
+            bar_width, bar_height = 100, 16
+            # nen xam
+            pygame.draw.rect(self.screen, (60, 60, 60), (bar_x, bar_y, bar_width, bar_height))
+            # thanh mau (xanh -> do neu thap)
+            health_ratio = current_health / max_health
+            bar_color = (255, 0, 0) if health_ratio < 0.3 else (255, 200, 0) if health_ratio < 0.6 else (0, 220, 0)
+            fill_width = max(0, int(bar_width * health_ratio))
+            pygame.draw.rect(self.screen, bar_color, (bar_x, bar_y, fill_width, bar_height))
+            # vien trang
+            pygame.draw.rect(self.screen, (255, 255, 255), (bar_x, bar_y, bar_width, bar_height), 2)
+            # so mau duoi thanh
+            health_text = self.menu_font.render(f"{current_health}/{max_health}", True, (255, 255, 255))
+            self.screen.blit(health_text, (bar_x + 4, bar_y + bar_height + 2))
+            # icon player ben trai
+            self.screen.blit(self.player_img, (bar_x - 38, bar_y - 2))
 
             #hiển thị hồi chiêu người chơi
             self.space_text = self.font.render(": Space", True,(0, 255, 0))
@@ -610,7 +661,21 @@ class Test:
         exit_img_hover = self.assets['menu/pause/EXIT_2']
         exit_button = Button(self,0,350,exit_img, 0.4, exit_img_hover)
 
+        level_info = self.menu_font.render(f"Level: {self.level}", True, (200, 200, 200))
+        controls = [
+            "W/S or Up/Down: Move",
+            "A/D or Left/Right: Walk",
+            "W/Up: Jump  |  X: Dash",
+            "Space: Skill  |  ESC: Pause",
+        ]
+        control_texts = [self.menu_font.render(c, True, (150, 150, 150)) for c in controls]
+
         while running:
+            self.screen.fill((20, 20, 30))
+            self.display.blit(pause_title, (35, 100))
+            # hien thi level info
+            self.screen.blit(level_info, (25, 150))
+            # nut bam
             if resume_button.draw(self.screen):
                 self.run()
             if menu_button.draw(self.screen):
@@ -618,7 +683,10 @@ class Test:
             if exit_button.draw(self.screen):
                 pygame.quit()
                 sys.exit()
-            
+            # hien thi controls
+            for i, ctrl_text in enumerate(control_texts):
+                self.screen.blit(ctrl_text, (15, 395 + i * 18))
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -626,7 +694,6 @@ class Test:
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         running = False
-            self.display.blit(pause_title, (35,175))
             pygame.display.update()
             self.clock.tick(60)
     
