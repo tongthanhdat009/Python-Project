@@ -350,10 +350,11 @@ class Test:
             # hien thi death animation (player do flash)
             if self.dead == 2:
                 self.player.update(self.tilemap, (self.movement[1] - self.movement[0], 0))
-                player_surf = pygame.Surface(self.player.img.get_size(), pygame.SRCALPHA)
+                player_img = self.player.animation.img()
+                player_surf = pygame.Surface(player_img.get_size(), pygame.SRCALPHA)
                 if self.flash_timer < 3:
                     player_surf.fill((255, 0, 0, 180))
-                player_surf.blit(self.player.img, (0, 0))
+                player_surf.blit(player_img, (0, 0))
                 self.display.blit(player_surf, (self.player.pos[0] - render_scroll[0], self.player.pos[1] - render_scroll[1]))
 
             # hiển thị checkpoint đã kích hoạt
@@ -662,13 +663,13 @@ class Test:
         exit_button = Button(self,0,350,exit_img, 0.4, exit_img_hover)
 
         level_info = self.menu_font.render(f"Level: {self.level}", True, (200, 200, 200))
+        # dung control font nho hon
+        control_font = pygame.font.SysFont("arial", 11)
         controls = [
-            "W/S or Up/Down: Move",
-            "A/D or Left/Right: Walk",
-            "W/Up: Jump  |  X: Dash",
-            "Space: Skill  |  ESC: Pause",
+            "W/S, Up/Down: Move | A/D, Left/Right: Walk",
+            "W/Up: Jump | X: Dash | Space: Skill | ESC: Pause",
         ]
-        control_texts = [self.menu_font.render(c, True, (150, 150, 150)) for c in controls]
+        control_texts = [control_font.render(c, True, (140, 140, 140)) for c in controls]
 
         while running:
             self.screen.fill((20, 20, 30))
@@ -685,7 +686,7 @@ class Test:
                 sys.exit()
             # hien thi controls
             for i, ctrl_text in enumerate(control_texts):
-                self.screen.blit(ctrl_text, (15, 395 + i * 18))
+                self.screen.blit(ctrl_text, (15, 450 + i * 14))
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:

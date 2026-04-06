@@ -416,6 +416,9 @@ class Spec_Enemy(EnemyBase):
         self.game.player.health += self.healing
         self.game.player.health_check()
 
+    def _remove_from_list(self):
+        self.game.spec_enemies.remove(self)
+
     def _shoot(self):
         self.game.sfx['shoot'].play()
         self.game.projectiles.append(
