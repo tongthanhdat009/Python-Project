@@ -6,12 +6,12 @@ import sys
 import time
 import pygame
 
-from script.entities import Boss, PhysicsEntity, Player, Enemy, Spec_Enemy
+from script.entities import Boss, FlyingEnemy, PhysicsEntity, Player, Enemy, Spec_Enemy
 from script.spark import Spark
-from script.utils import load_image, load_images, animation
+from script.utils import load_image, load_images, Animation
 from script.tilemap import Tilemap
 from script.spaceships import spaceships
-from script.particles import particle
+from script.particles import Particle
 from script.button import Button
 
 class Test:
@@ -29,7 +29,7 @@ class Test:
         self.display = pygame.Surface((320, 240),pygame.SRCALPHA)
         self.display_2 = pygame.Surface((320,240))
         
-        self.user_path = 'data//user.json'
+        self.user_path = 'data/user.json'
 
         self.clock = pygame.time.Clock()
 
@@ -37,87 +37,87 @@ class Test:
 
         # tải ảnh và hoạt ảnh
         self.assets = {
-            'decor': load_images('tiles//decor'),
-            'grass': load_images('tiles//grass'),
-            'large_decor': load_images(r'tiles/large_decor'),
-            'stone': load_images('tiles//stone'),
-            'industry1': load_images('tiles//industry//industry_plat_1'),
-            'industry2': load_images('tiles//industry//industry_plat_2'),
-            'industry3': load_images('tiles//industry//industry_plat_3'),
-            'industry4': load_images('tiles//industry//industry_plat_4'),
-            'industry5': load_images('tiles//industry//industry_plat_5'),
-            'industry6': load_images('tiles//industry//industry_plat_6'),
-            'industry7': load_images('tiles//industry//industry_plat_7'),
-            'industry8': load_images('tiles//industry//industry_plat_8'),
-            'power_station1':load_images('tiles//power_station//pw_plat_1'),
-            'power_station2':load_images('tiles//power_station//pw_plat_2'),
-            'power_station3':load_images('tiles//power_station//pw_plat_3'),
-            'power_station4':load_images('tiles//power_station//pw_plat_4'),
-            'power_station5':load_images('tiles//power_station//pw_plat_5'),
+            'decor': load_images('tiles/decor'),
+            'grass': load_images('tiles/grass'),
+            'large_decor': load_images('tiles/large_decor'),
+            'stone': load_images('tiles/stone'),
+            'industry1': load_images('tiles/industry/industry_plat_1'),
+            'industry2': load_images('tiles/industry/industry_plat_2'),
+            'industry3': load_images('tiles/industry/industry_plat_3'),
+            'industry4': load_images('tiles/industry/industry_plat_4'),
+            'industry5': load_images('tiles/industry/industry_plat_5'),
+            'industry6': load_images('tiles/industry/industry_plat_6'),
+            'industry7': load_images('tiles/industry/industry_plat_7'),
+            'industry8': load_images('tiles/industry/industry_plat_8'),
+            'power_station1':load_images('tiles/power_station/pw_plat_1'),
+            'power_station2':load_images('tiles/power_station/pw_plat_2'),
+            'power_station3':load_images('tiles/power_station/pw_plat_3'),
+            'power_station4':load_images('tiles/power_station/pw_plat_4'),
+            'power_station5':load_images('tiles/power_station/pw_plat_5'),
             'background': load_image('background.png'),
             'spaceships': load_images('spaceships'),
 
-            'player': load_image('entities//player.png'),
-            'player//idle': animation(load_images('entities//player//idle'), img_dur=6),
-            'player//run': animation(load_images('entities//player//run'), img_dur=7),
-            'player//jump': animation(load_images('entities//player//jump')),
-            'player//hurt': animation(load_images('entities//player//hurt'),img_dur=10),
-            'player//double_jump': animation(load_images('entities//player//double_jump'),img_dur=4),
-            'player//wall_slide': animation(load_images('entities//player//wall_slide')),
-            'particle//leaf': animation(load_images('particles//leaf'), img_dur= 20, loop= False),
-            'particle//particle': animation(load_images('particles//particle'), img_dur= 2, loop= False),
-            'enemy//idle': animation(load_images('entities//enemy//idle'), img_dur= 6),
-            'enemy//run': animation(load_images('entities//enemy//run'), img_dur= 7),
-            'spec_enemy//idle': animation(load_images('entities//spec_enemy//idle'), img_dur= 6),
-            'spec_enemy//run': animation(load_images('entities//spec_enemy//run'), img_dur= 7),
-            'boss//idle': animation(load_images('entities//boss//idle'), img_dur= 6),
-            'boss//run': animation(load_images('entities//boss//run'), img_dur= 7),
+            'player': load_image('entities/player.png'),
+            'player/idle': Animation(load_images('entities/player/idle'), img_dur=6),
+            'player/run': Animation(load_images('entities/player/run'), img_dur=7),
+            'player/jump': Animation(load_images('entities/player/jump')),
+            'player/hurt': Animation(load_images('entities/player/hurt'),img_dur=10),
+            'player/double_jump': Animation(load_images('entities/player/double_jump'),img_dur=4),
+            'player/wall_slide': Animation(load_images('entities/player/wall_slide')),
+            'particle/leaf': Animation(load_images('particles/leaf'), img_dur= 20, loop= False),
+            'particle/particle': Animation(load_images('particles/particle'), img_dur= 2, loop= False),
+            'enemy/idle': Animation(load_images('entities/enemy/idle'), img_dur= 6),
+            'enemy/run': Animation(load_images('entities/enemy/run'), img_dur= 7),
+            'spec_enemy/idle': Animation(load_images('entities/spec_enemy/idle'), img_dur= 6),
+            'spec_enemy/run': Animation(load_images('entities/spec_enemy/run'), img_dur= 7),
+            'boss/idle': Animation(load_images('entities/boss/idle'), img_dur= 6),
+            'boss/run': Animation(load_images('entities/boss/run'), img_dur= 7),
 
             'gun':load_image('gun.png'),
             'projectile':load_image('projectile.png'),
             'skill': load_image('skill.png'),
 
-            'menu//pause//EXIT_1': load_image('menu//pause//EXIT_1.png'),
-            'menu//pause//EXIT_2': load_image('menu//pause//EXIT_2.png'),
-            'menu//pause//RESUME_1': load_image('menu//pause//RESUME_1.png'),
-            'menu//pause//RESUME_2': load_image('menu//pause//RESUME_2.png'),
-            'menu//pause//MENU_1': load_image('menu//pause//MENU_1.png'),
-            'menu//pause//MENU_2': load_image('menu//pause//MENU_2.png'),
+            'menu/pause/EXIT_1': load_image('menu/pause/EXIT_1.png'),
+            'menu/pause/EXIT_2': load_image('menu/pause/EXIT_2.png'),
+            'menu/pause/RESUME_1': load_image('menu/pause/RESUME_1.png'),
+            'menu/pause/RESUME_2': load_image('menu/pause/RESUME_2.png'),
+            'menu/pause/MENU_1': load_image('menu/pause/MENU_1.png'),
+            'menu/pause/MENU_2': load_image('menu/pause/MENU_2.png'),
 
-            'menu//main//EXIT_1': load_image('menu//main//EXIT_1.png'),
-            'menu//main//EXIT_2': load_image('menu//main//EXIT_2.png'),
-            'menu//main//START_1': load_image('menu//main//START_1.png'),
-            'menu//main//START_2': load_image('menu//main//START_2.png'),
-            'menu//main//TITLE_1': load_image('menu//main//TITLE_1.png'),
-            'menu//main//TITLE_2': load_image('menu//main//TITLE_2.png'),
-            'menu//main//TITLE_3': load_image('menu//main//TITLE_3.png'),
-            'menu//main//TUTORIAL_1': load_image('menu//main//TUTORIAL_1.png'),
-            'menu//main//TUTORIAL_2': load_image('menu//main//TUTORIAL_2.png'),
-            'menu//main//CONTINUE_1': load_image('menu//main//CONTINUE_1.png'),
-            'menu//main//CONTINUE_2': load_image('menu//main//CONTINUE_2.png'),
-            'menu//main//background': load_images('menu//background'),
-            'menu//main//TUTOR_TITLE': load_image('menu//main//TUTOR_TITLE.png'),
-            'menu//main//TUTOR': load_image('menu//main//TUTOR.png'),
+            'menu/main/EXIT_1': load_image('menu/main/EXIT_1.png'),
+            'menu/main/EXIT_2': load_image('menu/main/EXIT_2.png'),
+            'menu/main/START_1': load_image('menu/main/START_1.png'),
+            'menu/main/START_2': load_image('menu/main/START_2.png'),
+            'menu/main/TITLE_1': load_image('menu/main/TITLE_1.png'),
+            'menu/main/TITLE_2': load_image('menu/main/TITLE_2.png'),
+            'menu/main/TITLE_3': load_image('menu/main/TITLE_3.png'),
+            'menu/main/TUTORIAL_1': load_image('menu/main/TUTORIAL_1.png'),
+            'menu/main/TUTORIAL_2': load_image('menu/main/TUTORIAL_2.png'),
+            'menu/main/CONTINUE_1': load_image('menu/main/CONTINUE_1.png'),
+            'menu/main/CONTINUE_2': load_image('menu/main/CONTINUE_2.png'),
+            'menu/main/background': load_images('menu/background'),
+            'menu/main/TUTOR_TITLE': load_image('menu/main/TUTOR_TITLE.png'),
+            'menu/main/TUTOR': load_image('menu/main/TUTOR.png'),
 
-            'menu//end//RESTART_1': load_image('menu//end/RESTART_1.png'),
-            'menu//end//RESTART_2': load_image('menu//end/RESTART_2.png'),
-            'menu//end//EXIT_1': load_image('menu//end/EXIT_1.png'),
-            'menu//end//EXIT_2': load_image('menu//end/EXIT_2.png'),
+            'menu/end/RESTART_1': load_image('menu/end/RESTART_1.png'),
+            'menu/end/RESTART_2': load_image('menu/end/RESTART_2.png'),
+            'menu/end/EXIT_1': load_image('menu/end/EXIT_1.png'),
+            'menu/end/EXIT_2': load_image('menu/end/EXIT_2.png'),
         }
         
         #âm thanh game
         self.sfx = {
-            'jump': pygame.mixer.Sound('data//sfx//jump.wav'),
-            'dash': pygame.mixer.Sound('data//sfx//dash.wav'),
-            'hit': pygame.mixer.Sound('data//sfx//hit.wav'),
-            'shoot': pygame.mixer.Sound('data//sfx//shoot.wav'),
-            'ambience': pygame.mixer.Sound('data//sfx//ambience.wav'),
-            'landing': pygame.mixer.Sound('data//sfx//landing.mp3'),
-            'ouch': pygame.mixer.Sound('data//sfx//ouch.mp3'),
-            'start': pygame.mixer.Sound('data//sfx//start.mp3'),
-            'click': pygame.mixer.Sound('data//sfx//click.mp3'),
-            'hover': pygame.mixer.Sound('data//sfx//hover.mp3'),
-            'skill': pygame.mixer.Sound('data//sfx//skill.MP3'),
+            'jump': pygame.mixer.Sound('data/sfx/jump.wav'),
+            'dash': pygame.mixer.Sound('data/sfx/dash.wav'),
+            'hit': pygame.mixer.Sound('data/sfx/hit.wav'),
+            'shoot': pygame.mixer.Sound('data/sfx/shoot.wav'),
+            'ambience': pygame.mixer.Sound('data/sfx/ambience.wav'),
+            'landing': pygame.mixer.Sound('data/sfx/landing.mp3'),
+            'ouch': pygame.mixer.Sound('data/sfx/ouch.mp3'),
+            'start': pygame.mixer.Sound('data/sfx/start.mp3'),
+            'click': pygame.mixer.Sound('data/sfx/click.mp3'),
+            'hover': pygame.mixer.Sound('data/sfx/hover.mp3'),
+            'skill': pygame.mixer.Sound('data/sfx/skill.MP3'),
         }
 
         self.sfx['ambience'].set_volume(0.2)
@@ -164,26 +164,30 @@ class Test:
 
         self.dead = 0 #kiểm tra người chơi đã chết chưa
 
+        self.checkpoint = None #vị trí checkpoint cuối cùng
+        self.active_checkpoints = set() #các checkpoint đã kích hoạt (index)
+        self.checkpoint_positions = [] #danh sách vị trí checkpoint
+
         self.screenshake = 0 #rung cam
 
         self.transition = -50
 
         # hiển số địch còn lại
-        self.font = pygame.font.Font('data//font//CyberpunkCraftpixPixel.otf', 32)
-        self.menu_font = pygame.font.Font('data//font//CyberpunkCraftpixPixel.otf', 19)
-        self.end_font = pygame.font.Font('data//font//CyberpunkCraftpixPixel.otf', 35)
+        self.font = pygame.font.Font('data/font/CyberpunkCraftpixPixel.otf', 32)
+        self.menu_font = pygame.font.Font('data/font/CyberpunkCraftpixPixel.otf', 19)
+        self.end_font = pygame.font.Font('data/font/CyberpunkCraftpixPixel.otf', 35)
         
         #đếm số npc còn lại
         self.enemies_count = self.font.render(": "+str(len(self.enemies)), True,(0, 255, 0))
         self.enemies_countRect = self.enemies_count.get_rect()
         self.enemies_countRect = (640//2,480//2)
-        self.enemy_img = pygame.transform.scale(load_image('entities//enemy//idle//0.png'),(35,35))
+        self.enemy_img = pygame.transform.scale(load_image('entities/enemy/idle/0.png'),(35,35))
 
         # hiển thị máu người chơi
         self.health_player_count = self.font.render(": "+str(self.player.health), True,(0, 255, 0))
         self.health_player_countRect = self.enemies_count.get_rect()
         self.health_player_countRect = (640//2,480//2)
-        self.player_img = pygame.transform.scale(load_image('entities//player//idle//0.png'),(35,35))
+        self.player_img = pygame.transform.scale(load_image('entities/player/idle/0.png'),(35,35))
 
         #hiển thị hồi chiêu người chơi
         self.skill_img = pygame.transform.scale(load_image('skill.png'),(25,25))
@@ -193,7 +197,7 @@ class Test:
         self.endGameText = self.font.render("Done!", True,(0, 255, 0))
 
     def load_level(self,map_id):
-        self.tilemap.load('data//maps//' + str(map_id) +'.json')
+        self.tilemap.load('data/maps/' + str(map_id) +'.json')
 
         self.projectiles = []
         self.skills = []
@@ -201,7 +205,13 @@ class Test:
         self.enemies = []
         self.spec_enemies = []
         self.bosses = []
-        for spawner in self.tilemap.extract([('spawners',0),('spawners',1),('spawners',2),('spawners',3)]):
+        self.flying_enemies = []
+
+        self.checkpoint = None
+        self.active_checkpoints = set()
+        self.checkpoint_positions = []
+
+        for spawner in self.tilemap.extract([('spawners',0),('spawners',1),('spawners',2),('spawners',3),('spawners',4),('spawners',5)]):
             if spawner['variant'] == 0:
                 self.player.pos = spawner['pos']
                 self.player.health = 300
@@ -211,6 +221,17 @@ class Test:
                 self.spec_enemies.append(Spec_Enemy(self,spawner['pos'],(8,15)))
             elif spawner['variant'] == 3:
                 self.bosses.append(Boss(self,spawner['pos'],(8,15)))
+            elif spawner['variant'] == 4:
+                self.checkpoint_positions.append(list(spawner['pos']))
+            elif spawner['variant'] == 5:
+                self.flying_enemies.append(FlyingEnemy(self, spawner['pos'], (8, 15)))
+
+    def respawn_at_checkpoint(self):
+        if self.checkpoint:
+            self.player.pos = list(self.checkpoint)
+        else:
+            self.load_level(self.level)
+        self.player.health = 300
 
     def save_level(self,level):
         # Đọc nội dung file JSON hiện tại
@@ -225,7 +246,7 @@ class Test:
             json.dump(data, file, indent=4)
 
     def enemies_upd(self):
-        remain = len(self.enemies) + len(self.spec_enemies) + len(self.bosses)
+        remain = len(self.enemies) + len(self.spec_enemies) + len(self.bosses) + len(self.flying_enemies)
         return remain
 
     def run(self):
@@ -241,13 +262,13 @@ class Test:
             if not self.enemies_upd():
                 self.transition += 1
                 if self.transition > 30:
-                    self.level = min(self.level + 1, len(os.listdir('data//maps')) - 1)
+                    self.level = min(self.level + 1, len(os.listdir('data/maps')) - 1)
                     print(self.level)
                     self.save_level(self.level)
                     self.transition = -50  # tạo lại hiệu ứng chuyển cảnh khi qua màn
                     self.load_level(self.level)
                     
-            if ((len(os.listdir('data//maps')) - 1) == self.level) and not self.enemies_upd():
+            if ((len(os.listdir('data/maps')) - 1) == self.level) and not self.enemies_upd():
                 self.level += 1
                 self.endGame()
                     
@@ -258,9 +279,8 @@ class Test:
             if self.dead == 1:
                 self.projectiles.clear()
                 self.skills.clear()
-                self.load_level(self.level)
+                self.respawn_at_checkpoint()
                 self.dead = 0
-                self.player.health = 300 #hồi lại đầy máu
 
 
             # di chuyển cam
@@ -272,7 +292,7 @@ class Test:
             # for rect in self.leaf_spawners:
             #     if random.random() * 49999 < rect.width * rect.height:
             #         pos = (rect.x + random.random() * rect.width, rect.y + random.random() * rect.height)
-            #         self.particles.append(particle(self, 'leaf', pos, velocity=[-0.1, 0.3], frame=random.randint(0, 20)))
+            #         self.particles.append(Particle(self, 'leaf', pos, velocity=[-0.1, 0.3], frame=random.randint(0, 20)))
 
             # tải vật thể trong map
             self.tilemap.render(self.display, offset=render_scroll)
@@ -283,21 +303,43 @@ class Test:
 
             # cập nhật và hiển thị npc
             for spec_enemy in self.spec_enemies.copy():
-                kill = spec_enemy.update(self.tilemap,(0,0))
+                _ = spec_enemy.update(self.tilemap,(0,0))
                 spec_enemy.render(self.display, offset = render_scroll)
 
             for enemy in self.enemies.copy():
-                kill = enemy.update(self.tilemap,(0,0))
+                _ = enemy.update(self.tilemap,(0,0))
                 enemy.render(self.display, offset = render_scroll)
 
             for enemy in self.bosses.copy():
-                kill = enemy.update(self.tilemap,(0,0))
+                _ = enemy.update(self.tilemap,(0,0))
                 enemy.render(self.display, offset = render_scroll)
+
+            for flying in self.flying_enemies.copy():
+                _ = flying.update(self.tilemap,(0,0))
+                flying.render(self.display, offset = render_scroll)
 
             # cập nhật và hiển thị nhân vật
             if not self.dead:
                 self.player.update(self.tilemap, (self.movement[1] - self.movement[0], 0))
                 self.player.render(self.display, offset=render_scroll)
+
+                # kiểm tra kích hoạt checkpoint
+                for i, cp in enumerate(self.checkpoint_positions):
+                    if i not in self.active_checkpoints:
+                        if self.player.pos[0] >= cp[0] - 8:
+                            self.active_checkpoints.add(i)
+                            self.checkpoint = list(cp)
+
+            # hiển thị checkpoint đã kích hoạt
+            for i, cp in enumerate(self.checkpoint_positions):
+                if i in self.active_checkpoints:
+                    cp_screen_x = cp[0] - render_scroll[0]
+                    cp_screen_y = cp[1] - render_scroll[1]
+                    # cột cờ
+                    pygame.draw.rect(self.display, (60, 60, 60), (cp_screen_x + 4, cp_screen_y, 2, 16))
+                    # lá cờ xanh
+                    pygame.draw.polygon(self.display, (0, 200, 100),
+                        [(cp_screen_x + 6, cp_screen_y), (cp_screen_x + 16, cp_screen_y + 3), (cp_screen_x + 6, cp_screen_y + 8)])
 
             # tạo đạn từ địch
             for projectile in self.projectiles.copy():
@@ -320,7 +362,7 @@ class Test:
                             speed = random.random() * 5
                             #hiệu ứng nổ khi trúng đạn
                             self.sparks.append(Spark(self.player.rect().center, angle, 2 + random.random(),(240, 72, 50)))
-                            self.particles.append(particle(self, 'particle', self.player.rect().center, velocity=[math.cos(angle + math.pi) * speed * 0.5, math.sin(angle + math.pi) * speed * 0.5], frame=random.randint(0, 7)))
+                            self.particles.append(Particle(self, 'particle', self.player.rect().center, velocity=[math.cos(angle + math.pi) * speed * 0.5, math.sin(angle + math.pi) * speed * 0.5], frame=random.randint(0, 7)))
             
             # kĩ năng từ người chơi
             for skill in self.skills.copy():
@@ -332,18 +374,18 @@ class Test:
                     self.skills.remove(skill)
                 elif skill.time_checker():
                     self.skills.remove(skill)
-                elif skill.enemy_class_checker(skill, self.enemies, self.spec_enemies, self.bosses, self.player.skill_dmg):
+                elif skill.enemy_class_checker(skill, self.enemies, self.spec_enemies, self.bosses, self.flying_enemies, self.player.skill_dmg):
                     for i in range(30):
                         angle = random.random() * math.pi * 2
                         speed = random.random() * 5
                         #hiệu ứng nổ khi trúng đạn
                         self.sparks.append(Spark(skill.rect().center, angle, 2 + random.random(), (187, 255, 0)))
-                        # self.particles.append(particle(self, 'particle', skill.rect().center, velocity=[math.cos(angle + math.pi) * speed * 0.5, math.sin(angle + math.pi) * speed * 0.5], frame=random.randint(0, 7)))
+                        # self.particles.append(Particle(self, 'particle', skill.rect().center, velocity=[math.cos(angle + math.pi) * speed * 0.5, math.sin(angle + math.pi) * speed * 0.5], frame=random.randint(0, 7)))
                     self.skills.remove(skill)
 
             #hiển thị tia lửa khi trúng đạn
             for spk in self.sparks.copy():
-                kill = spk.update() 
+                kill = spk.update()
                 spk.render(self.display, offset=render_scroll)
                 if kill:
                     self.sparks.remove(spk)
@@ -440,29 +482,29 @@ class Test:
         text_color = [(255,16,0), (224, 199, 69), (181, 255, 116)]
         slogan_text = self.menu_font.render("Hunt your foes, dash to victory!", True, (255,16,0))
         
-        start_img = self.assets['menu//main//START_1']
-        start_img_hover = self.assets['menu//main//START_2']
+        start_img = self.assets['menu/main/START_1']
+        start_img_hover = self.assets['menu/main/START_2']
         start_button = Button(self,265,225,start_img, 0.4, start_img_hover)
 
-        continue_img = self.assets['menu//main//CONTINUE_1']
-        continue_img_hover = self.assets['menu//main//CONTINUE_2']
+        continue_img = self.assets['menu/main/CONTINUE_1']
+        continue_img_hover = self.assets['menu/main/CONTINUE_2']
         continue_button = Button(self,425,225,continue_img, 0.4, continue_img_hover)
 
 
-        tutor_img = self.assets['menu//main//TUTORIAL_1']
-        tutor_img_hover = self.assets['menu//main//TUTORIAL_2']
+        tutor_img = self.assets['menu/main/TUTORIAL_1']
+        tutor_img_hover = self.assets['menu/main/TUTORIAL_2']
         turtor_button = Button(self,263,300,tutor_img, 0.4, tutor_img_hover)
         
-        exit_img = self.assets['menu//main//EXIT_1']
-        exit_img_hover = self.assets['menu//main//EXIT_2']
+        exit_img = self.assets['menu/main/EXIT_1']
+        exit_img_hover = self.assets['menu/main/EXIT_2']
         exit_button = Button(self,265,375,exit_img, 0.4,exit_img_hover)
 
         # Danh sách ảnh sẽ đổi trong thời gian hiện hành của menu
-        title_images = [self.assets['menu//main//TITLE_1'], self.assets['menu//main//TITLE_2'], self.assets['menu//main//TITLE_3']]
+        title_images = [self.assets['menu/main/TITLE_1'], self.assets['menu/main/TITLE_2'], self.assets['menu/main/TITLE_3']]
         current_title_index = 0
         title_img = title_images[current_title_index]
         
-        background_list = self.assets['menu//main//background'].copy()
+        background_list = self.assets['menu/main/background'].copy()
         current_background_index = 0
         background = pygame.transform.scale(background_list[current_background_index], (640,480))
 
@@ -473,7 +515,7 @@ class Test:
         background_switch_time = 3000  # mỗi 5 giây sẽ đổi 1 background
         bg_last_switch_time = pygame.time.get_ticks()
 
-        pygame.mixer.music.load('data//music.mp3')
+        pygame.mixer.music.load('data/music.mp3')
         pygame.mixer.music.set_volume(0.01)
         pygame.mixer.music.play(-1)
         
@@ -545,7 +587,7 @@ class Test:
                     if event.key == pygame.K_ESCAPE:  # Nhấn ESC để thoát tutorial
                         running = False
             # Vẽ nội dung tutorial
-            tutor_content = pygame.transform.scale(self.assets['menu//main//TUTOR'],(630,480))
+            tutor_content = pygame.transform.scale(self.assets['menu/main/TUTOR'],(630,480))
             self.screen.blit(tutor_content,(0,0))
             
             # Cập nhật màn hình
@@ -556,16 +598,16 @@ class Test:
         running = True
         pause_title = self.menu_font.render("Paused!", True, (255,16,0))
 
-        resume_img = self.assets['menu//pause//RESUME_1']
-        resume_img_hover = self.assets['menu//pause//RESUME_2']
+        resume_img = self.assets['menu/pause/RESUME_1']
+        resume_img_hover = self.assets['menu/pause/RESUME_2']
         resume_button = Button(self,0,200,resume_img, 0.4, resume_img_hover)
 
-        menu_img = self.assets['menu//pause//MENU_1']
-        menu_img_hover = self.assets['menu//pause//MENU_2']
+        menu_img = self.assets['menu/pause/MENU_1']
+        menu_img_hover = self.assets['menu/pause/MENU_2']
         menu_button = Button(self,0,275,menu_img, 0.4, menu_img_hover)
 
-        exit_img = self.assets['menu//pause//EXIT_1']
-        exit_img_hover = self.assets['menu//pause//EXIT_2']
+        exit_img = self.assets['menu/pause/EXIT_1']
+        exit_img_hover = self.assets['menu/pause/EXIT_2']
         exit_button = Button(self,0,350,exit_img, 0.4, exit_img_hover)
 
         while running:
@@ -592,12 +634,12 @@ class Test:
         running = True
 
         # Tải hình ảnh và tạo nút
-        restart_img = self.assets['menu//end//RESTART_1']
-        restart_img_hover = self.assets['menu//end//RESTART_2']
+        restart_img = self.assets['menu/end/RESTART_1']
+        restart_img_hover = self.assets['menu/end/RESTART_2']
         restart_button = Button(self, 125, 400, restart_img, 0.4, restart_img_hover)
 
-        exit_img = self.assets['menu//end//EXIT_1']
-        exit_img_hover = self.assets['menu//end//EXIT_2']
+        exit_img = self.assets['menu/end/EXIT_1']
+        exit_img_hover = self.assets['menu/end/EXIT_2']
         exit_button = Button(self, 350, 400, exit_img, 0.4, exit_img_hover)
 
         # Tạo văn bản và thiết lập vị trí ban đầu

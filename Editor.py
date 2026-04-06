@@ -4,7 +4,7 @@ import json
 
 
 
-from script.utils import load_images, animation
+from script.utils import load_images
 from script.tilemap import Tilemap
 
 RENDER_SCALE = 2.0
@@ -19,30 +19,30 @@ class Editor:
 
         self.clock = pygame.time.Clock()
         
-        self.path = 'data//maps//3.json'
-        self.user_path = 'data//user.json'
+        self.path = 'data/maps/3.json'
+        self.user_path = 'data/user.json'
         
 
         #hình ảnh
         self.assets = {
-            'decor': load_images('tiles//decor'),
-            'grass': load_images('tiles//grass'),
-            'large_decor': load_images('tiles//large_decor'),
-            'stone': load_images('tiles//stone'),
-            'spawners': load_images('tiles//spawners'),
-            'industry1': load_images('tiles//industry//industry_plat_1'),
-            'industry2': load_images('tiles//industry//industry_plat_2'),
-            'industry3': load_images('tiles//industry//industry_plat_3'),
-            'industry4': load_images('tiles//industry//industry_plat_4'),
-            'industry5': load_images('tiles//industry//industry_plat_5'),
-            'industry6': load_images('tiles//industry//industry_plat_6'),
-            'industry7': load_images('tiles//industry//industry_plat_7'),
-            'industry8': load_images('tiles//industry//industry_plat_8'),
-            'power_station1':load_images('tiles//power_station//pw_plat_1'),
-            'power_station2':load_images('tiles//power_station//pw_plat_2'),
-            'power_station3':load_images('tiles//power_station//pw_plat_3'),
-            'power_station4':load_images('tiles//power_station//pw_plat_4'),
-            'power_station5':load_images('tiles//power_station//pw_plat_5'),
+            'decor': load_images('tiles/decor'),
+            'grass': load_images('tiles/grass'),
+            'large_decor': load_images('tiles/large_decor'),
+            'stone': load_images('tiles/stone'),
+            'spawners': load_images('tiles/spawners'),
+            'industry1': load_images('tiles/industry/industry_plat_1'),
+            'industry2': load_images('tiles/industry/industry_plat_2'),
+            'industry3': load_images('tiles/industry/industry_plat_3'),
+            'industry4': load_images('tiles/industry/industry_plat_4'),
+            'industry5': load_images('tiles/industry/industry_plat_5'),
+            'industry6': load_images('tiles/industry/industry_plat_6'),
+            'industry7': load_images('tiles/industry/industry_plat_7'),
+            'industry8': load_images('tiles/industry/industry_plat_8'),
+            'power_station1':load_images('tiles/power_station/pw_plat_1'),
+            'power_station2':load_images('tiles/power_station/pw_plat_2'),
+            'power_station3':load_images('tiles/power_station/pw_plat_3'),
+            'power_station4':load_images('tiles/power_station/pw_plat_4'),
+            'power_station5':load_images('tiles/power_station/pw_plat_5'),
         }
         print(self.assets)
         

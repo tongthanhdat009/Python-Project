@@ -1,7 +1,7 @@
 import pygame
 import os
 
-BASE_IMG_PATH = 'data//images//'
+BASE_IMG_PATH = 'data/images/'
 
 def load_image(path):
     img = pygame.image.load(BASE_IMG_PATH + path).convert()
@@ -12,11 +12,11 @@ def load_image(path):
 def load_images(path):
     images = []
     for img_name in os.listdir(BASE_IMG_PATH + path):
-        images.append(load_image(path + '//' + img_name))
+        images.append(load_image(path + '/' + img_name))
     return images
 
 # hoạt ảnh
-class animation:
+class Animation:
     def __init__(self, images, img_dur=5,loop=True):
         self.images = images
         self.img_duration = img_dur
@@ -25,7 +25,7 @@ class animation:
         self.frame = 0 
     
     def copy(self):
-        return animation(self.images,self.img_duration,self.loop)
+        return Animation(self.images,self.img_duration,self.loop)
     
     def update(self):
         if self.loop:
